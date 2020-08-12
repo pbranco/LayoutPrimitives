@@ -8,6 +8,10 @@
 
 import UIKit
 
+public enum LayoutPrimitivesPriority: Float {
+    case highest = 1000, high = 999, medium = 500, low = 2, lowest = 1
+}
+
 public enum LayoutPrimitives {
     case relative(
         toView: UIView?, // when toView is nil we consider relative to parent
@@ -40,10 +44,6 @@ public enum LayoutPrimitives {
     indirect case aggregate(
         [LayoutPrimitives]
     )
-}
-
-public enum LayoutPrimitivesPriority: Float {
-    case highest = 1000, high = 999, medium = 500, low = 2, lowest = 1
 }
 
 extension LayoutPrimitives: ExpressibleByArrayLiteral {
