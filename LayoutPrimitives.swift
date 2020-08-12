@@ -125,14 +125,14 @@ public extension LayoutPrimitives {
     
     static func fillWidthPercent(_ multiplier: CGFloat, to view: UIView? = nil, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
-            .relative(toView: view, attribute: .centerY, to: .centerY, priority: 1), // center vertically with less priority
+            .relative(toView: view, attribute: .centerY, to: .centerY, priority: LayoutPrimitivesPriority.lowest.rawValue), // center vertically with less priority
             .relative(toView: view, attribute: .width, to: .width, multiplier: multiplier, priority: priority.rawValue)
         ]
     }
     
     static func fillHeightPercent(_ multiplier: CGFloat, to view: UIView? = nil, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
-            .relative(toView: view, attribute: .centerX, to: .centerX, priority: 1), // center horizontally with less priority
+            .relative(toView: view, attribute: .centerX, to: .centerX, priority: LayoutPrimitivesPriority.lowest.rawValue), // center horizontally with less priority
             .relative(toView: view, attribute: .height, to: .height, multiplier: multiplier, priority: priority.rawValue)
         ]
     }
