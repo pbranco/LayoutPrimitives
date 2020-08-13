@@ -209,12 +209,12 @@ public extension LayoutPrimitives {
 
 public extension UIView {
     @discardableResult
-    func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T, [NSLayoutConstraint]) -> Void)? = nil) -> T where T: UIView {
+    func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
         subview.translatesAutoresizingMaskIntoConstraints = false
         addSubview(subview)
         let constraints: [NSLayoutConstraint] = primitives.getConstraints(for: subview)
         NSLayoutConstraint.activate(constraints)
-        configure?(subview, constraints)
-        return subview
+        configure?(subview)
+        return (subview, constraints)
     }
 }
