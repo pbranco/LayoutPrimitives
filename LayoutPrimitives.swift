@@ -1,3 +1,13 @@
+//
+//  LayoutPrimitives.swift
+//
+//
+//  Created by Pedro Branco on 12/08/2020.
+//
+//
+
+import UIKit
+
 public enum LayoutPrimitivesPriority: Float {
     case highest = 1000, high = 999, medium = 500, low = 2, lowest = 1
 }
