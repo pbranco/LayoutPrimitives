@@ -201,7 +201,7 @@ public extension LayoutPrimitives {
         return .relative(toView: view, attribute: .leading, to: .leading, constant: constant, priority: priority.rawValue)
     }
     
-    static func align(to view: UIView? = nil, _ top: CGFloat, _ right: CGFloat, _ bottom: CGFloat, _ left: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+    static func align(to view: UIView? = nil, top: CGFloat, right: CGFloat, bottom: CGFloat, left: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .top, to: .top, constant: top, priority: priority.rawValue),
             .relative(toView: view, attribute: .trailing, to: .trailing, constant: right, priority: priority.rawValue),
