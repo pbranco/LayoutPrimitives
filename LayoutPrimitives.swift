@@ -113,9 +113,9 @@ public extension LayoutPrimitives {
             let constraint = NSLayoutConstraint(item: view, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: view, attribute: NSLayoutConstraint.Attribute.width, multiplier: multiplier, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority)
             result.append(constraint)
-        case .aggregate(let pins):
-            for pin in pins {
-                pin.getConstraintsRecursive(for: view, result: &result)
+        case .aggregate(let primitives):
+            for primitive in primitives {
+                primitive.getConstraintsRecursive(for: view, result: &result)
             }
         }
     }
