@@ -110,7 +110,7 @@ public extension LayoutPrimitives {
             constraint.priority = UILayoutPriority(rawValue: priority)
             result.append(constraint)
         case .ratio(let multiplier, let constant, let priority):
-            let constraint = NSLayoutConstraint(item: view, attribute: NSLayoutConstraint.Attribute.height, relatedBy: NSLayoutConstraint.Relation.equal, toItem: view, attribute: NSLayoutConstraint.Attribute.width, multiplier: multiplier, constant: constant)
+            let constraint = NSLayoutConstraint(item: view, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: view, attribute: NSLayoutConstraint.Attribute.height, multiplier: multiplier, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority)
             result.append(constraint)
         case .aggregate(let primitives):
@@ -177,11 +177,11 @@ public extension LayoutPrimitives {
         return .fixed(attribute: .height, relatedBy: .greaterThanOrEqual, constant: constant, priority: priority.rawValue)
     }
     
-    static func centerHorizontally(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+    static func centerX(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .centerX, to: .centerX, constant: constant, priority: priority.rawValue)
     }
     
-    static func centerVertically(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+    static func centerY(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .centerY, to: .centerY, constant: constant, priority: priority.rawValue)
     }
     
@@ -234,12 +234,8 @@ public extension LayoutPrimitives {
         return .relative(toView: view, attribute: .right, to: .left, constant: -constant, priority: priority.rawValue)
     }
     
-    static func aspectRatio(_ multiplier: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .ratio(multiplier: multiplier, priority: priority.rawValue)
-    }
-    
-    static func keepAspectRatio(priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .ratio(multiplier: 1, priority: priority.rawValue)
+    static func aspectRatio(_ width: CGFloat, _ height: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .ratio(multiplier: width / height, priority: priority.rawValue)
     }
 }
 
