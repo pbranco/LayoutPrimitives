@@ -8,7 +8,7 @@
 import UIKit
 
 public enum LayoutPrimitivesPriority: Float {
-    case highest = 1000, high = 999, medium = 500, low = 2, lowest = 1
+    case highest = 1000, almostHighest = 999, high = 750, medium = 500, low = 250, almostLowest = 2, lowest = 1
 }
 
 public enum LayoutPrimitives {
@@ -286,6 +286,7 @@ public class StackPv: UIStackView {
         self.alignment = alignment
         self.distribution = distribution
         self.spacing = spacing
+        backgroundColor = .clear
     }
     
     @discardableResult
@@ -334,6 +335,7 @@ public class SpacerPv: UIView {
         self.min = min
         self.max = max
         self.priority = priority
+        backgroundColor = .clear
     }
     
     @discardableResult
@@ -354,7 +356,7 @@ public class SpacerPv: UIView {
     }
 }
 
-public class SpacerFillPv: SpacerPv {
+public class SpacerFilledPv: SpacerPv {
     convenience init(min: CGFloat = 1_000_000, priority: LayoutPrimitivesPriority = .lowest) {
         self.init(nil, min: min, max: nil, priority: priority)
     }
