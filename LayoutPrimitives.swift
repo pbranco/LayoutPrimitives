@@ -1,9 +1,8 @@
 //
 //  LayoutPrimitives.swift
 //
-//
 //  Created by Pedro Branco on 12/08/2020.
-//
+//  Copyright (c) 2020 Pedro Branco. All rights reserved.
 //
 
 import UIKit
@@ -242,11 +241,121 @@ public extension LayoutPrimitives {
 public extension UIView {
     @discardableResult
     func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
-        subview.translatesAutoresizingMaskIntoConstraints = false
         addSubview(subview)
+        return apply(subview, primitives, configure: configure)
+    }
+    
+    @discardableResult
+    func addHStack(alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+        let subview = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
+        return add(subview, primitives, configure: configure).0
+    }
+
+    @discardableResult
+    func addVStack(alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+        let subview = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
+        return add(subview, primitives, configure: configure).0
+    }
+    
+    @discardableResult
+    func apply(_ primitives: LayoutPrimitives...) -> Self {
+        return apply(self, .aggregate(primitives), configure: nil).0
+    }
+    
+    private func apply<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
+        subview.translatesAutoresizingMaskIntoConstraints = false
         let constraints: [NSLayoutConstraint] = primitives.getConstraints(for: subview)
         NSLayoutConstraint.activate(constraints)
         configure?(subview)
         return (subview, constraints)
+    }
+}
+
+public class StackPv: UIStackView {
+    required init(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+    
+    convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
+        self.init(frame: .zero)
+        self.axis = axis
+        self.alignment = alignment
+        self.distribution = distribution
+        self.spacing = spacing
+    }
+    
+    @discardableResult
+    func add(_ views: UIView...) -> Self {
+        for view in views {
+            if let spacer = view as? SpacerPv {
+                spacer.applySpacing(axis: axis)
+            }
+            
+            addArrangedSubview(view)
+        }
+        
+        return self
+    }
+}
+
+public class VStackPv: StackPv {
+    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
+        self.init(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
+    }
+}
+
+public class HStackPv: StackPv {
+    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
+        self.init(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
+    }
+}
+
+public class SpacerPv: UIView {
+    var spacing: CGFloat?
+    var min: CGFloat?
+    var max: CGFloat?
+    var priority: LayoutPrimitivesPriority = .highest
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+    
+    convenience init(_ spacing: CGFloat? = nil, min: CGFloat? = nil, max: CGFloat? = nil, priority: LayoutPrimitivesPriority = .highest) {
+        self.init(frame: .zero)
+        self.spacing = spacing
+        self.min = min
+        self.max = max
+        self.priority = priority
+    }
+    
+    @discardableResult
+    func applySpacing(axis: NSLayoutConstraint.Axis = .vertical) -> Self {
+        if let spacing = spacing {
+            apply(axis == .vertical ? .height(spacing, priority: priority) : .width(spacing, priority: priority))
+        }
+        
+        if let min = min {
+            apply(axis == .vertical ? .minHeight(min, priority: priority) : .minWidth(min, priority: priority))
+        }
+        
+        if let max = max {
+            apply(axis == .vertical ? .maxHeight(max, priority: priority) : .maxWidth(max, priority: priority))
+        }
+        
+        return self
+    }
+}
+
+public class SpacerFillPv: SpacerPv {
+    convenience init(min: CGFloat = 1_000_000, priority: LayoutPrimitivesPriority = .lowest) {
+        self.init(nil, min: min, max: nil, priority: priority)
     }
 }
