@@ -125,10 +125,10 @@ public extension LayoutPrimitives {
     static func fill(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .fillWidth(to: view, leftRightMargin, priority: priority),
-            .fillHeight(to: view, topBottomMargin, priority: priority)
+            .fillHeight(to: view, topBottomMargin, priority: priority),
         ]
     }
-    
+
     static func fillWidth(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .centerY, to: .centerY, priority: LayoutPrimitivesPriority.lowest.rawValue), // center vertically with less priority
@@ -264,7 +264,7 @@ public extension UIView {
         addSubview(subview)
         return apply(subview, primitives, configure: configure)
     }
-    
+
     @discardableResult
     func addDefault<T>(_ subview: T, _ primitives: LayoutPrimitives = .fill(15, 0), configure: ((T) -> Void)? = nil) -> T where T: UIView {
         return add(subview, primitives, configure: configure).0
