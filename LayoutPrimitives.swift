@@ -121,7 +121,7 @@ public extension LayoutPrimitives {
 }
 
 public extension LayoutPrimitives {
-    // When toView is nil we consider relative to parent
+    // When the view parameter is nil we consider relative to parent
     static func fill(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .fillWidth(to: view, leftRightMargin, priority: priority),
@@ -247,15 +247,21 @@ public extension LayoutPrimitives {
 
 public extension UIView {
     private struct Holder {
-        static var layoutPrimitives = [String: LayoutPrimitives]()
+        static let semaphore = DispatchSemaphore(value: 1)
+        static var childPrimitives = [String: LayoutPrimitives]()
     }
 
-    private var layoutPrimitives: LayoutPrimitives? {
+    private var childPrimitives: LayoutPrimitives? {
         get {
-            return Holder.layoutPrimitives[description]
+            Holder.semaphore.wait()
+            let primitives = Holder.childPrimitives[description]
+            Holder.semaphore.signal()
+            return primitives
         }
         set(newValue) {
-            Holder.layoutPrimitives[description] = newValue
+            Holder.semaphore.wait()
+            Holder.childPrimitives[description] = newValue
+            Holder.semaphore.signal()
         }
     }
 
@@ -266,7 +272,8 @@ public extension UIView {
     }
 
     @discardableResult
-    func addDefault<T>(_ subview: T, _ primitives: LayoutPrimitives = .fill(15, 0), configure: ((T) -> Void)? = nil) -> T where T: UIView {
+    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(15, 0), configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        subview.backgroundColor = backgroundColor
         return add(subview, primitives, configure: configure).0
     }
 
@@ -286,26 +293,26 @@ public extension UIView {
     func addChildren(_ subviews: UIView...) -> Self {
         for view in subviews {
             addSubview(view)
-            view.apply()
+            view.applyChildPrimitives()
+            view.childPrimitives = nil
         }
-        Holder.layoutPrimitives.removeAll()
         return self
+    }
+
+    private func applyChildPrimitives() {
+        guard let childPrimitives = childPrimitives else { return }
+        apply(childPrimitives)
     }
 
     @discardableResult
     func configureChild(_ primitives: LayoutPrimitives...) -> Self {
-        layoutPrimitives = .aggregate(primitives)
+        childPrimitives = .aggregate(primitives)
         return self
     }
 
     @discardableResult
     func apply(_ primitives: LayoutPrimitives...) -> Self {
         return apply(self, .aggregate(primitives), configure: nil).0
-    }
-
-    private func apply() {
-        guard let layoutPrimitives = layoutPrimitives else { return }
-        apply(layoutPrimitives)
     }
 
     private func apply<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
@@ -341,10 +348,8 @@ public class StackPv: UIStackView {
             if let spacer = view as? SpacerPv {
                 spacer.applySpacing(axis: axis)
             }
-
             addArrangedSubview(view)
         }
-
         return self
     }
 }
