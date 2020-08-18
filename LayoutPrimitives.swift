@@ -63,24 +63,24 @@ public extension LayoutPrimitives {
         getConstraintsRecursive(for: view, result: &result)
         return result
     }
-    
+
     fileprivate func getConstraintsRecursive(for view: UIView, result: inout [NSLayoutConstraint]) {
         switch self {
-        case .relative(let toView, let attribute, let relatedBy, let to, let multiplier, let constant, let priority):
+        case let .relative(toView, attribute, relatedBy, to, multiplier, constant, priority):
             var relatedView: UIView? = toView
-            
+
             if relatedView == nil {
                 relatedView = view.superview
             }
-            
+
             guard let relatedViewFinal = relatedView else { return }
-            
+
             let constraint = NSLayoutConstraint(item: view, attribute: attribute, relatedBy: relatedBy, toItem: relatedViewFinal, attribute: to, multiplier: multiplier, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority)
             result.append(constraint)
-        case .relativeToSibling(let attribute, let relatedBy, let to, let multiplier, let constant, let priority):
+        case let .relativeToSibling(attribute, relatedBy, to, multiplier, constant, priority):
             guard let superview = view.superview else { return }
-            
+
             var siblingFlag = false
             for v in superview.subviews.reversed() {
                 if siblingFlag {
@@ -89,14 +89,14 @@ public extension LayoutPrimitives {
                     result.append(constraint)
                     break
                 }
-                
+
                 if v == view {
                     siblingFlag = true
                 }
             }
-        case .alignToSafeArea(let top, let right, let bottom, let left):
+        case let .alignToSafeArea(top, right, bottom, left):
             guard let superview = view.superview else { return }
-            
+
             let constraints: [NSLayoutConstraint] = [
                 view.leadingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.leadingAnchor, constant: left),
                 view.trailingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.trailingAnchor, constant: -right),
@@ -104,15 +104,15 @@ public extension LayoutPrimitives {
                 view.bottomAnchor.constraint(equalTo: superview.bottomAnchor, constant: -bottom),
             ]
             result.append(contentsOf: constraints)
-        case .fixed(let attribute, let relatedBy, let constant, let priority):
+        case let .fixed(attribute, relatedBy, constant, priority):
             let constraint = NSLayoutConstraint(item: view, attribute: attribute, relatedBy: relatedBy, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority)
             result.append(constraint)
-        case .ratio(let multiplier, let constant, let priority):
+        case let .ratio(multiplier, constant, priority):
             let constraint = NSLayoutConstraint(item: view, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: view, attribute: NSLayoutConstraint.Attribute.height, multiplier: multiplier, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority)
             result.append(constraint)
-        case .aggregate(let primitives):
+        case let .aggregate(primitives):
             for primitive in primitives {
                 primitive.getConstraintsRecursive(for: view, result: &result)
             }
@@ -122,6 +122,13 @@ public extension LayoutPrimitives {
 
 public extension LayoutPrimitives {
     // When toView is nil we consider relative to parent
+    static func fill(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return [
+            .fillWidth(to: view, leftRightMargin, priority: priority),
+            .fillHeight(to: view, topBottomMargin, priority: priority)
+        ]
+    }
+    
     static func fillWidth(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .centerY, to: .centerY, priority: LayoutPrimitivesPriority.lowest.rawValue), // center vertically with less priority
@@ -129,7 +136,7 @@ public extension LayoutPrimitives {
             .relative(toView: view, attribute: .trailing, to: .trailing, constant: -leftRightMargin, priority: priority.rawValue),
         ]
     }
-    
+
     static func fillHeight(to view: UIView? = nil, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .centerX, to: .centerX, priority: LayoutPrimitivesPriority.lowest.rawValue), // center horizontally with less priority
@@ -137,69 +144,69 @@ public extension LayoutPrimitives {
             .relative(toView: view, attribute: .bottom, to: .bottom, constant: -topBottomMargin, priority: priority.rawValue),
         ]
     }
-    
+
     static func fillWidthPercent(to view: UIView? = nil, _ multiplier: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .centerY, to: .centerY, priority: LayoutPrimitivesPriority.lowest.rawValue), // center vertically with less priority
-            .relative(toView: view, attribute: .width, to: .width, multiplier: multiplier, priority: priority.rawValue)
+            .relative(toView: view, attribute: .width, to: .width, multiplier: multiplier, priority: priority.rawValue),
         ]
     }
-    
+
     static func fillHeightPercent(to view: UIView? = nil, _ multiplier: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .centerX, to: .centerX, priority: LayoutPrimitivesPriority.lowest.rawValue), // center horizontally with less priority
-            .relative(toView: view, attribute: .height, to: .height, multiplier: multiplier, priority: priority.rawValue)
+            .relative(toView: view, attribute: .height, to: .height, multiplier: multiplier, priority: priority.rawValue),
         ]
     }
-    
+
     static func width(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attribute: .width, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func height(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attribute: .height, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func maxWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attribute: .width, relatedBy: .lessThanOrEqual, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func maxHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attribute: .height, relatedBy: .lessThanOrEqual, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func minWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attribute: .width, relatedBy: .greaterThanOrEqual, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func minHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attribute: .height, relatedBy: .greaterThanOrEqual, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func centerX(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .centerX, to: .centerX, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func centerY(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .centerY, to: .centerY, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func top(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .top, to: .top, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func right(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .trailing, to: .trailing, constant: -constant, priority: priority.rawValue)
     }
-    
+
     static func bottom(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .bottom, to: .bottom, constant: -constant, priority: priority.rawValue)
     }
-    
+
     static func left(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .leading, to: .leading, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func align(to view: UIView? = nil, top: CGFloat, right: CGFloat, bottom: CGFloat, left: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .top, to: .top, constant: top, priority: priority.rawValue),
@@ -208,43 +215,61 @@ public extension LayoutPrimitives {
             .relative(toView: view, attribute: .leading, to: .leading, constant: left, priority: priority.rawValue),
         ]
     }
-    
+
     static func below(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .top, to: .bottom, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func belowSibling(_ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relativeToSibling(attribute: .top, to: .bottom, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func nextTo(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .left, to: .right, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func nextToSibling(_ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relativeToSibling(attribute: .left, to: .right, constant: constant, priority: priority.rawValue)
     }
-    
+
     static func above(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .bottom, to: .top, constant: -constant, priority: priority.rawValue)
     }
-    
+
     static func behind(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attribute: .right, to: .left, constant: -constant, priority: priority.rawValue)
     }
-    
+
     static func aspectRatio(_ width: CGFloat, _ height: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .ratio(multiplier: width / height, priority: priority.rawValue)
     }
 }
 
 public extension UIView {
+    private struct Holder {
+        static var layoutPrimitives = [String: LayoutPrimitives]()
+    }
+
+    private var layoutPrimitives: LayoutPrimitives? {
+        get {
+            return Holder.layoutPrimitives[description]
+        }
+        set(newValue) {
+            Holder.layoutPrimitives[description] = newValue
+        }
+    }
+
     @discardableResult
     func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
         addSubview(subview)
         return apply(subview, primitives, configure: configure)
     }
     
+    @discardableResult
+    func addDefault<T>(_ subview: T, _ primitives: LayoutPrimitives = .fill(15, 0), configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        return add(subview, primitives, configure: configure).0
+    }
+
     @discardableResult
     func addHStack(alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let subview = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
@@ -256,12 +281,33 @@ public extension UIView {
         let subview = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
         return add(subview, primitives, configure: configure).0
     }
-    
+
+    @discardableResult
+    func addChildren(_ subviews: UIView...) -> Self {
+        for view in subviews {
+            addSubview(view)
+            view.apply()
+        }
+        Holder.layoutPrimitives.removeAll()
+        return self
+    }
+
+    @discardableResult
+    func configureChild(_ primitives: LayoutPrimitives...) -> Self {
+        layoutPrimitives = .aggregate(primitives)
+        return self
+    }
+
     @discardableResult
     func apply(_ primitives: LayoutPrimitives...) -> Self {
         return apply(self, .aggregate(primitives), configure: nil).0
     }
-    
+
+    private func apply() {
+        guard let layoutPrimitives = layoutPrimitives else { return }
+        apply(layoutPrimitives)
+    }
+
     private func apply<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
         subview.translatesAutoresizingMaskIntoConstraints = false
         let constraints: [NSLayoutConstraint] = primitives.getConstraints(for: subview)
@@ -275,11 +321,11 @@ public class StackPv: UIStackView {
     required init(coder: NSCoder) {
         super.init(coder: coder)
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
-    
+
     convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
         self.init(frame: .zero)
         self.axis = axis
@@ -288,17 +334,17 @@ public class StackPv: UIStackView {
         self.spacing = spacing
         backgroundColor = .clear
     }
-    
+
     @discardableResult
     func add(_ views: UIView...) -> Self {
         for view in views {
             if let spacer = view as? SpacerPv {
                 spacer.applySpacing(axis: axis)
             }
-            
+
             addArrangedSubview(view)
         }
-        
+
         return self
     }
 }
@@ -320,15 +366,15 @@ public class SpacerPv: UIView {
     var min: CGFloat?
     var max: CGFloat?
     var priority: LayoutPrimitivesPriority = .highest
-    
+
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
-    
+
     convenience init(_ spacing: CGFloat? = nil, min: CGFloat? = nil, max: CGFloat? = nil, priority: LayoutPrimitivesPriority = .highest) {
         self.init(frame: .zero)
         self.spacing = spacing
@@ -337,27 +383,27 @@ public class SpacerPv: UIView {
         self.priority = priority
         backgroundColor = .clear
     }
-    
+
     @discardableResult
     func applySpacing(axis: NSLayoutConstraint.Axis = .vertical) -> Self {
         if let spacing = spacing {
             apply(axis == .vertical ? .height(spacing, priority: priority) : .width(spacing, priority: priority))
         }
-        
+
         if let min = min {
             apply(axis == .vertical ? .minHeight(min, priority: priority) : .minWidth(min, priority: priority))
         }
-        
+
         if let max = max {
             apply(axis == .vertical ? .maxHeight(max, priority: priority) : .maxWidth(max, priority: priority))
         }
-        
+
         return self
     }
 }
 
 public class SpacerFilledPv: SpacerPv {
-    convenience init(min: CGFloat = 1_000_000, priority: LayoutPrimitivesPriority = .lowest) {
+    convenience init(min: CGFloat = 1000000, priority: LayoutPrimitivesPriority = .lowest) {
         self.init(nil, min: min, max: nil, priority: priority)
     }
 }
