@@ -129,6 +129,10 @@ public extension LayoutPrimitives {
         ]
     }
 
+    static func fillDefault(priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fill(15, 0)
+    }
+
     static func fillWidth(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attribute: .centerY, to: .centerY, priority: LayoutPrimitivesPriority.lowest.rawValue), // center vertically with less priority
@@ -272,21 +276,49 @@ public extension UIView {
     }
 
     @discardableResult
-    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(15, 0), configure: ((T) -> Void)? = nil) -> T where T: UIView {
+    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fillDefault(), configure: ((T) -> Void)? = nil) -> T where T: UIView {
         subview.backgroundColor = backgroundColor
         return add(subview, primitives, configure: configure).0
     }
 
     @discardableResult
-    func addHStack(alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addHStack(scrollable: Bool = false, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let subview = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
+
+        if scrollable {
+            let container = UIView()
+            container.backgroundColor = .clear
+            addScroller().add(container, [.fill(), .fillHeightPercent(1.0)])
+            container.add(subview, primitives, configure: configure)
+            return subview
+        }
+
         return add(subview, primitives, configure: configure).0
     }
 
     @discardableResult
-    func addVStack(alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addVStack(scrollable: Bool = false, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let subview = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
+
+        if scrollable {
+            let container = UIView()
+            container.backgroundColor = .clear
+            addScroller().add(container, [.fill(), .fillWidthPercent(1.0)])
+            container.add(subview, primitives, configure: configure)
+            return subview
+        }
+
         return add(subview, primitives, configure: configure).0
+    }
+
+    @discardableResult
+    func addScroller(_ primitives: LayoutPrimitives = .fill()) -> UIScrollView {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.backgroundColor = .clear
+        add(scrollView, primitives)
+        return scrollView
     }
 
     @discardableResult
