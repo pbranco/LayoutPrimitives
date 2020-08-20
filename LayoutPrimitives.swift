@@ -33,7 +33,8 @@ public enum LayoutPrimitives {
         top: CGFloat = 0,
         right: CGFloat = 0,
         bottom: CGFloat = 0,
-        left: CGFloat = 0
+        left: CGFloat = 0,
+        priority: LayoutPrimitivesPriority = .highest
     )
     case fixed(
         attribute: NSLayoutConstraint.Attribute,
@@ -94,15 +95,16 @@ public extension LayoutPrimitives {
                     siblingFlag = true
                 }
             }
-        case let .alignToSafeArea(top, right, bottom, left):
+        case let .alignToSafeArea(top, right, bottom, left, priority):
             guard let superview = view.superview else { return }
 
             let constraints: [NSLayoutConstraint] = [
                 view.leadingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.leadingAnchor, constant: left),
                 view.trailingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.trailingAnchor, constant: -right),
                 view.topAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.topAnchor, constant: top),
-                view.bottomAnchor.constraint(equalTo: superview.bottomAnchor, constant: -bottom),
+                view.bottomAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.bottomAnchor, constant: -bottom),
             ]
+            constraints.forEach { $0.priority = UILayoutPriority(rawValue: priority.rawValue) }
             result.append(contentsOf: constraints)
         case let .fixed(attribute, relatedBy, constant, priority):
             let constraint = NSLayoutConstraint(item: view, attribute: attribute, relatedBy: relatedBy, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: constant)
