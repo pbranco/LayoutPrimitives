@@ -121,13 +121,11 @@ public extension LayoutPrimitives {
 }
 
 public extension LayoutPrimitives {
+    static let fillDefault: LayoutPrimitives = .fill(15, 0)
+
     // When the view parameter is nil we consider relative to parent
     static func fill(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .align(to: view, top: topBottomMargin, right: leftRightMargin, bottom: topBottomMargin, left: leftRightMargin, priority: priority)
-    }
-
-    static func fillDefault(priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fill(15, 0)
     }
 
     static func fillWidth(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
@@ -269,15 +267,15 @@ public extension UIView {
     }
 
     @discardableResult
-    func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> (T, [NSLayoutConstraint]) where T: UIView {
+    func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
         addSubview(subview)
-        return LayoutPrimitivesUtils.apply(to: subview, primitives, configure: configure)
+        return LayoutPrimitivesUtils.apply(to: subview, primitives, configure: configure).0
     }
 
     @discardableResult
-    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fillDefault(), configure: ((T) -> Void)? = nil) -> T where T: UIView {
+    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fillDefault, configure: ((T) -> Void)? = nil) -> T where T: UIView {
         subview.backgroundColor = backgroundColor
-        return add(subview, primitives, configure: configure).0
+        return add(subview, primitives, configure: configure)
     }
 
     @discardableResult
@@ -292,7 +290,7 @@ public extension UIView {
             return subview
         }
 
-        return add(subview, primitives, configure: configure).0
+        return add(subview, primitives, configure: configure)
     }
 
     @discardableResult
@@ -307,7 +305,7 @@ public extension UIView {
             return subview
         }
 
-        return add(subview, primitives, configure: configure).0
+        return add(subview, primitives, configure: configure)
     }
 
     @discardableResult
