@@ -158,12 +158,12 @@ public extension LayoutPrimitives {
         ]
     }
 
-    static func equalWidths(to view: UIView? = nil, percent: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .relative(toView: view, attr1: .width, attr2: .width, multiplier: percent, priority: priority)
+    static func equalWidths(to view: UIView? = nil, multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .relative(toView: view, attr1: .width, attr2: .width, multiplier: multiplier, priority: priority)
     }
 
-    static func equalHeights(to view: UIView? = nil, percent: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .relative(toView: view, attr1: .height, attr2: .height, multiplier: percent, priority: priority)
+    static func equalHeights(to view: UIView? = nil, multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .relative(toView: view, attr1: .height, attr2: .height, multiplier: multiplier, priority: priority)
     }
 
     static func width(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
