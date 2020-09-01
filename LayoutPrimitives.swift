@@ -158,11 +158,11 @@ public extension LayoutPrimitives {
         ]
     }
 
-    static func equalWidths(to view: UIView? = nil, multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+    static func equalWidths(to view: UIView? = nil, _ multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .width, attr2: .width, multiplier: multiplier, priority: priority)
     }
 
-    static func equalHeights(to view: UIView? = nil, multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+    static func equalHeights(to view: UIView? = nil, _ multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .height, attr2: .height, multiplier: multiplier, priority: priority)
     }
 
@@ -366,7 +366,7 @@ public extension UIView {
     }
 
     @discardableResult
-    func applyConstraint(relatedView: UIView, attr1: NSLayoutConstraint.Attribute, relation: NSLayoutConstraint.Relation, attr2: NSLayoutConstraint.Attribute, multiplier: CGFloat = 1, constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> NSLayoutConstraint {
+    func applyConstraint(relativeTo relatedView: UIView, attr1: NSLayoutConstraint.Attribute, relation: NSLayoutConstraint.Relation, attr2: NSLayoutConstraint.Attribute, multiplier: CGFloat = 1, constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> NSLayoutConstraint {
         return LayoutPrimitivesUtils.apply(to: self, .constrained(view1: self, attr1: attr1, relation: relation, view2: relatedView, attr2: attr2, multiplier: multiplier, constant: constant, priority: priority), configure: nil).constraints[0]
     }
 }
