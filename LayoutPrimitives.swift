@@ -301,32 +301,32 @@ public extension UIView {
 
     @discardableResult
     func addHStack(scrollable: Bool = false, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
-        let subview = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
+        let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
 
         if scrollable {
             let container = UIView()
             container.backgroundColor = .clear
             addScroller().add(container, [.fill(), .equalHeights()])
-            container.add(subview, primitives, configure: configure)
-            return subview
+            container.add(stack, primitives, configure: configure)
+            return stack
         }
 
-        return add(subview, primitives, configure: configure)
+        return add(stack, primitives, configure: configure)
     }
 
     @discardableResult
     func addVStack(scrollable: Bool = false, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
-        let subview = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
+        let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
 
         if scrollable {
             let container = UIView()
             container.backgroundColor = .clear
             addScroller().add(container, [.fill(), .equalWidths()])
-            container.add(subview, primitives, configure: configure)
-            return subview
+            container.add(stack, primitives, configure: configure)
+            return stack
         }
 
-        return add(subview, primitives, configure: configure)
+        return add(stack, primitives, configure: configure)
     }
 
     @discardableResult
@@ -358,6 +358,24 @@ public extension UIView {
     func configureChild(_ primitives: LayoutPrimitives...) -> Self {
         childPrimitives = .aggregate(primitives)
         return self
+    }
+
+    @discardableResult
+    func insert<T>(_ subview: T, at index: Int, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        insertSubview(subview, at: index)
+        return LayoutPrimitivesUtils.apply(to: subview, primitives, configure: configure).view
+    }
+
+    @discardableResult
+    func insert<T>(_ subview: T, above siblingSubview: UIView, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        insertSubview(subview, aboveSubview: siblingSubview)
+        return LayoutPrimitivesUtils.apply(to: subview, primitives, configure: configure).view
+    }
+
+    @discardableResult
+    func insert<T>(_ subview: T, below siblingSubview: UIView, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        insertSubview(subview, belowSubview: siblingSubview)
+        return LayoutPrimitivesUtils.apply(to: subview, primitives, configure: configure).view
     }
 
     @discardableResult
