@@ -170,24 +170,48 @@ public extension LayoutPrimitives {
         return .fixed(attr: .width, constant: constant, priority: priority)
     }
 
+    static func width(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, constant: UIScreen.main.bounds.width * percent, priority: priority)
+    }
+
     static func height(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attr: .height, constant: constant, priority: priority)
+    }
+
+    static func height(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, constant: UIScreen.main.bounds.height * percent, priority: priority)
     }
 
     static func maxWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attr: .width, relation: .lessThanOrEqual, constant: constant, priority: priority)
     }
 
+    static func maxWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, relation: .lessThanOrEqual, constant: UIScreen.main.bounds.width * percent, priority: priority)
+    }
+
     static func maxHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attr: .height, relation: .lessThanOrEqual, constant: constant, priority: priority)
+    }
+
+    static func maxHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, relation: .lessThanOrEqual, constant: UIScreen.main.bounds.height * percent, priority: priority)
     }
 
     static func minWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attr: .width, relation: .greaterThanOrEqual, constant: constant, priority: priority)
     }
 
+    static func minWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, relation: .greaterThanOrEqual, constant: UIScreen.main.bounds.width * percent, priority: priority)
+    }
+
     static func minHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .fixed(attr: .height, relation: .greaterThanOrEqual, constant: constant, priority: priority)
+    }
+
+    static func minHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, relation: .greaterThanOrEqual, constant: UIScreen.main.bounds.height * percent, priority: priority)
     }
 
     static func centerX(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
@@ -300,14 +324,12 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHStack(scrollable: Bool = false, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addHStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
 
         if scrollable {
-            let container = UIView()
-            container.backgroundColor = .clear
-            addScroller().add(container, [.fill(), .equalHeights()])
-            container.add(stack, primitives, configure: configure)
+            addHScrollContainer(scrollDelegate: scrollDelegate)
+                .add(stack, primitives, configure: configure)
             return stack
         }
 
@@ -315,18 +337,36 @@ public extension UIView {
     }
 
     @discardableResult
-    func addVStack(scrollable: Bool = false, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addVStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
 
         if scrollable {
-            let container = UIView()
-            container.backgroundColor = .clear
-            addScroller().add(container, [.fill(), .equalWidths()])
-            container.add(stack, primitives, configure: configure)
+            addVScrollContainer(scrollDelegate: scrollDelegate)
+                .add(stack, primitives, configure: configure)
             return stack
         }
 
         return add(stack, primitives, configure: configure)
+    }
+
+    @discardableResult
+    func addHScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives = .fill()) -> UIView {
+        let container = UIView()
+        container.backgroundColor = .clear
+        let scroller = addScroller()
+        scroller.delegate = scrollDelegate
+        scroller.add(container, [primitives, .equalHeights()])
+        return container
+    }
+
+    @discardableResult
+    func addVScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives = .fill()) -> UIView {
+        let container = UIView()
+        container.backgroundColor = .clear
+        let scroller = addScroller()
+        scroller.delegate = scrollDelegate
+        scroller.add(container, [primitives, .equalWidths()])
+        return container
     }
 
     @discardableResult
