@@ -137,8 +137,6 @@ public extension LayoutPrimitives {
 }
 
 public extension LayoutPrimitives {
-    static let fillDefault: LayoutPrimitives = .fill(15, 0)
-
     // When the view parameter is nil we consider relative to parent
     static func fill(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .align(to: view, top: topBottomMargin, right: leftRightMargin, bottom: topBottomMargin, left: leftRightMargin, priority: priority)
@@ -318,7 +316,7 @@ public extension UIView {
     }
 
     @discardableResult
-    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fillDefault, configure: ((T) -> Void)? = nil) -> T where T: UIView {
+    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(), configure: ((T) -> Void)? = nil) -> T where T: UIView {
         subview.backgroundColor = backgroundColor
         return add(subview, primitives, configure: configure)
     }
@@ -395,7 +393,7 @@ public extension UIView {
     }
 
     @discardableResult
-    func configureChild(_ primitives: LayoutPrimitives...) -> Self {
+    func configChildPvs(_ primitives: LayoutPrimitives...) -> Self {
         childPrimitives = .aggregate(primitives)
         return self
     }
@@ -448,7 +446,7 @@ public class StackPv: UIStackView {
     }
 
     @discardableResult
-    func add(_ views: UIView...) -> Self {
+    func addArranged(_ views: UIView...) -> Self {
         for view in views {
             if let spacer = view as? SpacerPv {
                 spacer.applySpacing(axis: axis)
