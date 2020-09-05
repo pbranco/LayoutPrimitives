@@ -322,11 +322,11 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addHStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
 
         if scrollable {
-            addHScrollContainer(scrollDelegate: scrollDelegate)
+            addHScrollContainer(scrollDelegate: scrollDelegate, .fill())
                 .add(stack, primitives, configure: configure)
             return stack
         }
@@ -335,11 +335,11 @@ public extension UIView {
     }
 
     @discardableResult
-    func addVStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addVStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
 
         if scrollable {
-            addVScrollContainer(scrollDelegate: scrollDelegate)
+            addVScrollContainer(scrollDelegate: scrollDelegate, .fill())
                 .add(stack, primitives, configure: configure)
             return stack
         }
@@ -348,27 +348,27 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives = .fill()) -> UIView {
+    func addHScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives) -> UIView {
         let container = UIView()
         container.backgroundColor = .clear
-        let scroller = addScroller()
+        let scroller = addScroller(.fill())
         scroller.delegate = scrollDelegate
         scroller.add(container, [primitives, .equalHeights()])
         return container
     }
 
     @discardableResult
-    func addVScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives = .fill()) -> UIView {
+    func addVScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives) -> UIView {
         let container = UIView()
         container.backgroundColor = .clear
-        let scroller = addScroller()
+        let scroller = addScroller(.fill())
         scroller.delegate = scrollDelegate
         scroller.add(container, [primitives, .equalWidths()])
         return container
     }
 
     @discardableResult
-    func addScroller(_ primitives: LayoutPrimitives = .fill()) -> UIScrollView {
+    func addScroller(_ primitives: LayoutPrimitives) -> UIScrollView {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
@@ -393,7 +393,7 @@ public extension UIView {
     }
 
     @discardableResult
-    func configChildPvs(_ primitives: LayoutPrimitives...) -> Self {
+    func childWith(_ primitives: LayoutPrimitives...) -> Self {
         childPrimitives = .aggregate(primitives)
         return self
     }
