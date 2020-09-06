@@ -23,7 +23,7 @@ public enum LayoutPrimitives {
         priority: LayoutPrimitivesPriority = .highest
     )
     case relative(
-        toView: UIView?, // when toView is nil we consider relative to parent
+        toView: UIView?, // whenever toView is nil we consider relative to parent
         attr1: NSLayoutConstraint.Attribute,
         relation: NSLayoutConstraint.Relation = .equal,
         attr2: NSLayoutConstraint.Attribute,
@@ -137,11 +137,20 @@ public extension LayoutPrimitives {
 }
 
 public extension LayoutPrimitives {
-    // When the view parameter is nil we consider relative to parent
+    // Note: Whenever the view parameter is nil we consider relative to parent
+
+    /// The 'fill' primitive is equivalent to the following constraints:
+    ///    leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: leftRightMargin),
+    ///    trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -leftRightMargin),
+    ///    topAnchor.constraint(equalTo: view.topAnchor, constant: topBottomMargin),
+    ///    bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -topBottomMargin)
     static func fill(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .align(to: view, top: topBottomMargin, right: leftRightMargin, bottom: topBottomMargin, left: leftRightMargin, priority: priority)
     }
 
+    /// The 'fillWidth' primitive is equivalent to the following constraints:
+    ///    leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: leftRightMargin),
+    ///    trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -leftRightMargin)
     static func fillWidth(to view: UIView? = nil, _ leftRightMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attr1: .leading, attr2: .leading, constant: leftRightMargin, priority: priority),
@@ -149,6 +158,9 @@ public extension LayoutPrimitives {
         ]
     }
 
+    /// The 'fillHeight' primitive is equivalent to the following constraints:
+    ///    topAnchor.constraint(equalTo: view.topAnchor, constant: topBottomMargin),
+    ///    bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -topBottomMargin)
     static func fillHeight(to view: UIView? = nil, _ topBottomMargin: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attr1: .top, attr2: .top, constant: topBottomMargin, priority: priority),
@@ -156,86 +168,59 @@ public extension LayoutPrimitives {
         ]
     }
 
+    /// The 'equalWidths' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(equalTo: view.widthAnchor).multiplier = multiplier
     static func equalWidths(to view: UIView? = nil, _ multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .width, attr2: .width, multiplier: multiplier, priority: priority)
     }
 
+    /// The 'equalHeights' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(equalTo: view.heightAnchor).multiplier = multiplier
     static func equalHeights(to view: UIView? = nil, _ multiplier: CGFloat = 1, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .height, attr2: .height, multiplier: multiplier, priority: priority)
     }
 
-    static func width(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .width, constant: constant, priority: priority)
-    }
-
-    static func width(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .width, constant: UIScreen.main.bounds.width * percent, priority: priority)
-    }
-
-    static func height(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .height, constant: constant, priority: priority)
-    }
-
-    static func height(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .height, constant: UIScreen.main.bounds.height * percent, priority: priority)
-    }
-
-    static func maxWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .width, relation: .lessThanOrEqual, constant: constant, priority: priority)
-    }
-
-    static func maxWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .width, relation: .lessThanOrEqual, constant: UIScreen.main.bounds.width * percent, priority: priority)
-    }
-
-    static func maxHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .height, relation: .lessThanOrEqual, constant: constant, priority: priority)
-    }
-
-    static func maxHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .height, relation: .lessThanOrEqual, constant: UIScreen.main.bounds.height * percent, priority: priority)
-    }
-
-    static func minWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .width, relation: .greaterThanOrEqual, constant: constant, priority: priority)
-    }
-
-    static func minWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .width, relation: .greaterThanOrEqual, constant: UIScreen.main.bounds.width * percent, priority: priority)
-    }
-
-    static func minHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .height, relation: .greaterThanOrEqual, constant: constant, priority: priority)
-    }
-
-    static func minHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .fixed(attr: .height, relation: .greaterThanOrEqual, constant: UIScreen.main.bounds.height * percent, priority: priority)
-    }
-
+    /// The 'centerX' primitive is equivalent to the following constraint:
+    ///    centerXAnchor.constraint(equalTo: view.centerXAnchor, constant: constant)
     static func centerX(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .centerX, attr2: .centerX, constant: constant, priority: priority)
     }
 
+    /// The 'centerY' primitive is equivalent to the following constraint:
+    ///    centerYAnchor.constraint(equalTo: view.centerYAnchor, constant: constant)
     static func centerY(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .centerY, attr2: .centerY, constant: constant, priority: priority)
     }
 
+    /// The 'top' primitive is equivalent to the following constraint:
+    ///    topAnchor.constraint(equalTo: view.topAnchor, constant: constant)
     static func top(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .top, attr2: .top, constant: constant, priority: priority)
     }
 
+    /// The 'right' primitive is equivalent to the following constraint:
+    ///    trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: constant)
     static func right(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .trailing, attr2: .trailing, constant: -constant, priority: priority)
     }
 
+    /// The 'bottom' primitive is equivalent to the following constraint:
+    ///    bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: constant)
     static func bottom(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .bottom, attr2: .bottom, constant: -constant, priority: priority)
     }
 
+    /// The 'left' primitive is equivalent to the following constraint:
+    ///    leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: constant)
     static func left(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .leading, attr2: .leading, constant: constant, priority: priority)
     }
 
+    /// The 'align' primitive is equivalent to the following constraints:
+    ///    leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: left),
+    ///    trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -right),
+    ///    topAnchor.constraint(equalTo: view.topAnchor, constant: top),
+    ///    bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -bottom)
     static func align(to view: UIView? = nil, top: CGFloat, right: CGFloat, bottom: CGFloat, left: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return [
             .relative(toView: view, attr1: .top, attr2: .top, constant: top, priority: priority),
@@ -245,30 +230,116 @@ public extension LayoutPrimitives {
         ]
     }
 
+    /// The 'below' primitive is equivalent to the following constraint:
+    ///    topAnchor.constraint(equalTo: view.bottomAnchor, constant: constant)
     static func below(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .top, attr2: .bottom, constant: constant, priority: priority)
     }
 
+    /// The 'belowSibling' primitive is equivalent to the following constraint:
+    ///    topAnchor.constraint(equalTo: siblingView.bottomAnchor, constant: constant) // where siblingView is the view just above the current view
     static func belowSibling(_ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relativeToSibling(attr1: .top, attr2: .bottom, constant: constant, priority: priority)
     }
 
+    /// The 'nextTo' primitive is equivalent to the following constraint:
+    ///    leadingAnchor.constraint(equalTo: view.trailingAnchor, constant: constant)
     static func nextTo(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .left, attr2: .right, constant: constant, priority: priority)
     }
 
+    /// The 'nextToSibling' primitive is equivalent to the following constraint:
+    ///    leadingAnchor.constraint(equalTo: siblingView.trailingAnchor, constant: constant) // where siblingView is the view just before to the current view
     static func nextToSibling(_ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relativeToSibling(attr1: .left, attr2: .right, constant: constant, priority: priority)
     }
 
+    /// The 'above' primitive is equivalent to the following constraint:
+    ///    bottomAnchor.constraint(equalTo: view.topAnchor, constant: -constant)
     static func above(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .bottom, attr2: .top, constant: -constant, priority: priority)
     }
 
+    /// The 'behind' primitive is equivalent to the following constraint:
+    ///    trailingAnchor.constraint(equalTo: view.leadingAnchor, constant: -constant)
     static func behind(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .right, attr2: .left, constant: -constant, priority: priority)
     }
 
+    /// The 'width' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(equalToConstant: constant)
+    static func width(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, constant: constant, priority: priority)
+    }
+
+    /// The 'width(percent:)' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(equalToConstant: UIScreen.main.bounds.width * percent)
+    static func width(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, constant: UIScreen.main.bounds.width * percent, priority: priority)
+    }
+
+    /// The 'height' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(equalToConstant: constant)
+    static func height(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, constant: constant, priority: priority)
+    }
+
+    /// The 'height(percent:)' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(equalToConstant: UIScreen.main.bounds.width * percent)
+    static func height(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, constant: UIScreen.main.bounds.height * percent, priority: priority)
+    }
+
+    /// The 'maxWidth' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(lessThanOrEqualToConstant: constant)
+    static func maxWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, relation: .lessThanOrEqual, constant: constant, priority: priority)
+    }
+
+    /// The 'maxWidth(percent:)' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.width * percent)
+    static func maxWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, relation: .lessThanOrEqual, constant: UIScreen.main.bounds.width * percent, priority: priority)
+    }
+
+    /// The 'maxHeight' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(lessThanOrEqualToConstant: constant)
+    static func maxHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, relation: .lessThanOrEqual, constant: constant, priority: priority)
+    }
+
+    /// The 'maxHeight(percent:)' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(lessThanOrEqualToConstant: UIScreen.main.bounds.height * percent)
+    static func maxHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, relation: .lessThanOrEqual, constant: UIScreen.main.bounds.height * percent, priority: priority)
+    }
+
+    /// The 'minWidth' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(greaterThanOrEqualToConstant: constant)
+    static func minWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, relation: .greaterThanOrEqual, constant: constant, priority: priority)
+    }
+
+    /// The 'minWidth(percent:)' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(greaterThanOrEqualToConstant: UIScreen.main.bounds.width * percent)
+    static func minWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .width, relation: .greaterThanOrEqual, constant: UIScreen.main.bounds.width * percent, priority: priority)
+    }
+
+    /// The 'minHeight' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(greaterThanOrEqualToConstant: constant)
+    static func minHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, relation: .greaterThanOrEqual, constant: constant, priority: priority)
+    }
+
+    /// The 'minHeight(percent:)' primitive is equivalent to the following constraint:
+    ///    heightAnchor.constraint(greaterThanOrEqualToConstant: UIScreen.main.bounds.height * percent)
+    static func minHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return .fixed(attr: .height, relation: .greaterThanOrEqual, constant: UIScreen.main.bounds.height * percent, priority: priority)
+    }
+
+    /// The 'aspectRatio' primitive is equivalent to the following constraint:
+    ///    widthAnchor.constraint(equalTo: heightAnchor).multiplier = widthParcel / heightParcel
     static func aspectRatio(_ widthParcel: CGFloat, _ heightParcel: CGFloat, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .ratio(multiplier: widthParcel / heightParcel, priority: priority)
     }
