@@ -387,14 +387,16 @@ public extension UIView {
     }
 
     @discardableResult
-    func addDefault<T>(_ subview: T, _ backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(), configure: ((T) -> Void)? = nil) -> T where T: UIView {
+    func addDefaultSubview(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(), configure: ((UIView) -> Void)? = nil) -> UIView {
+        let subview = UIView()
         subview.backgroundColor = backgroundColor
         return add(subview, primitives, configure: configure)
     }
 
     @discardableResult
-    func addHStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addHStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
+        stack.backgroundColor = backgroundColor
 
         if scrollable {
             addHScrollContainer(scrollDelegate: scrollDelegate, .fill())
@@ -406,8 +408,9 @@ public extension UIView {
     }
 
     @discardableResult
-    func addVStack(scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
+    func addVStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
         let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
+        stack.backgroundColor = backgroundColor
 
         if scrollable {
             addVScrollContainer(scrollDelegate: scrollDelegate, .fill())
@@ -419,32 +422,30 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives) -> UIView {
-        let container = UIView()
-        container.backgroundColor = .clear
+    func addHScrollContainer<T>(_ container: T = UIView() as! T, bg backgroundColor: UIColor = .clear, scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        container.backgroundColor = backgroundColor
         let scroller = addScroller(.fill())
         scroller.delegate = scrollDelegate
-        scroller.add(container, [primitives, .equalHeights()])
+        scroller.add(container, [primitives, .equalHeights()], configure: configure)
         return container
     }
 
     @discardableResult
-    func addVScrollContainer(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives) -> UIView {
-        let container = UIView()
-        container.backgroundColor = .clear
+    func addVScrollContainer<T>(_ container: T = UIView() as! T, bg backgroundColor: UIColor = .clear, scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
+        container.backgroundColor = backgroundColor
         let scroller = addScroller(.fill())
         scroller.delegate = scrollDelegate
-        scroller.add(container, [primitives, .equalWidths()])
+        scroller.add(container, [primitives, .equalWidths()], configure: configure)
         return container
     }
 
     @discardableResult
-    func addScroller(_ primitives: LayoutPrimitives) -> UIScrollView {
+    func addScroller(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives, configure: ((UIScrollView) -> Void)? = nil) -> UIScrollView {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
-        scrollView.backgroundColor = .clear
-        add(scrollView, primitives)
+        scrollView.backgroundColor = backgroundColor
+        add(scrollView, primitives, configure: configure)
         return scrollView
     }
 
@@ -507,13 +508,13 @@ public class StackPv: UIStackView {
         super.init(frame: frame)
     }
 
-    convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
+    convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear) {
         self.init(frame: .zero)
         self.axis = axis
         self.alignment = alignment
         self.distribution = distribution
         self.spacing = spacing
-        backgroundColor = .clear
+        self.backgroundColor = backgroundColor
     }
 
     @discardableResult
@@ -529,19 +530,20 @@ public class StackPv: UIStackView {
 }
 
 public class VStackPv: StackPv {
-    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
-        self.init(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
+    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear) {
+        self.init(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
     }
 }
 
 public class HStackPv: StackPv {
-    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0) {
-        self.init(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
+    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear) {
+        self.init(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
     }
 }
 
 public class SpacerPv: UIView {
     var spacing: CGFloat?
+    var percent: CGFloat?
     var min: CGFloat?
     var max: CGFloat?
     var priority: LayoutPrimitivesPriority = .highest
@@ -554,19 +556,24 @@ public class SpacerPv: UIView {
         super.init(frame: frame)
     }
 
-    convenience init(_ spacing: CGFloat? = nil, min: CGFloat? = nil, max: CGFloat? = nil, priority: LayoutPrimitivesPriority = .highest) {
+    convenience init(_ spacing: CGFloat? = nil, percent: CGFloat? = nil, min: CGFloat? = nil, max: CGFloat? = nil, bg backgroundColor: UIColor = .clear, priority: LayoutPrimitivesPriority = .highest) {
         self.init(frame: .zero)
         self.spacing = spacing
+        self.percent = percent
         self.min = min
         self.max = max
         self.priority = priority
-        backgroundColor = .clear
+        self.backgroundColor = backgroundColor
     }
 
     @discardableResult
     func applySpacing(axis: NSLayoutConstraint.Axis = .vertical) -> Self {
         if let spacing = spacing {
             apply(axis == .vertical ? .height(spacing, priority: priority) : .width(spacing, priority: priority))
+        }
+
+        if let percent = percent {
+            apply(axis == .vertical ? .height(UIScreen.main.bounds.height * percent, priority: priority) : .width(UIScreen.main.bounds.width * percent, priority: priority))
         }
 
         if let min = min {
@@ -582,7 +589,38 @@ public class SpacerPv: UIView {
 }
 
 public class SpacerFilledPv: SpacerPv {
-    convenience init(min: CGFloat = 1000000, priority: LayoutPrimitivesPriority = .lowest) {
-        self.init(nil, min: min, max: nil, priority: priority)
+    convenience init(bg backgroundColor: UIColor = .clear, priority: LayoutPrimitivesPriority = .lowest) {
+        self.init(nil, min: 1000000, max: nil, priority: priority)
+    }
+}
+
+public class ViewPv: UIView {
+    convenience init(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = []) {
+        self.init()
+        self.backgroundColor = backgroundColor
+        apply(primitives)
+    }
+}
+
+public class ImagePv: UIImageView {
+    convenience init(_ named: String, contentMode: ContentMode = .scaleAspectFit, _ primitives: LayoutPrimitives = []) {
+        self.init(image: UIImage(named: named))
+        self.contentMode = contentMode
+        setContentHuggingPriority(.required, for: .horizontal)
+        setContentCompressionResistancePriority(.required, for: .vertical)
+        apply(primitives)
+    }
+}
+
+public class LabelPv: UILabel {
+    convenience init(_ text: String, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, _ primitives: LayoutPrimitives = []) {
+        self.init()
+        self.text = text
+        textAlignment = alignment
+        self.font = font
+        textColor = color
+        lineBreakMode = lineBreak
+        numberOfLines = lines
+        apply(primitives)
     }
 }
