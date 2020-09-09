@@ -7,6 +7,8 @@
 
 import UIKit
 
+public let MAX_PV: CGFloat = 1000000
+
 public enum LayoutPrimitivesPriority: Float {
     case highest = 1000, almostHighest = 999, high = 750, medium = 500, low = 250, almostLowest = 2, lowest = 1
 }
@@ -192,6 +194,13 @@ public extension LayoutPrimitives {
         return .relative(toView: view, attr1: .centerY, attr2: .centerY, constant: constant, priority: priority)
     }
 
+    /// The 'center' primitive is equivalent to the following constraints:
+    ///    centerXAnchor.constraint(equalTo: view.centerXAnchor),
+    ///    centerYAnchor.constraint(equalTo: view.centerYAnchor)
+    static func center(to view: UIView? = nil, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return [.centerX(to: view, priority: priority), .centerY(to: view, priority: priority)]
+    }
+
     /// The 'top' primitive is equivalent to the following constraint:
     ///    topAnchor.constraint(equalTo: view.topAnchor, constant: constant)
     static func top(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
@@ -351,10 +360,13 @@ public struct ViewConstraints<T> {
 }
 
 public class LayoutPrimitivesUtils {
+    @discardableResult
     static func apply<T>(to view: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> ViewConstraints<T> where T: UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         let constraints: [NSLayoutConstraint] = primitives.getConstraints(for: view)
-        NSLayoutConstraint.activate(constraints)
+        if !constraints.isEmpty {
+            NSLayoutConstraint.activate(constraints)
+        }
         configure?(view)
         return ViewConstraints(view: view, constraints: constraints)
     }
@@ -388,9 +400,7 @@ public extension UIView {
 
     @discardableResult
     func addDefaultSubview(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(), configure: ((UIView) -> Void)? = nil) -> UIView {
-        let subview = UIView()
-        subview.backgroundColor = backgroundColor
-        return add(subview, primitives, configure: configure)
+        return add(ViewPv(bg: backgroundColor), primitives, configure: configure)
     }
 
     @discardableResult
@@ -508,13 +518,14 @@ public class StackPv: UIStackView {
         super.init(frame: frame)
     }
 
-    convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear) {
+    convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) {
         self.init(frame: .zero)
         self.axis = axis
         self.alignment = alignment
         self.distribution = distribution
         self.spacing = spacing
         self.backgroundColor = backgroundColor
+        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
     }
 
     @discardableResult
@@ -530,14 +541,14 @@ public class StackPv: UIStackView {
 }
 
 public class VStackPv: StackPv {
-    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear) {
-        self.init(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
+    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) {
+        self.init(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, primitives, configure: configure)
     }
 }
 
 public class HStackPv: StackPv {
-    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear) {
-        self.init(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
+    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) {
+        self.init(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, primitives, configure: configure)
     }
 }
 
@@ -590,37 +601,37 @@ public class SpacerPv: UIView {
 
 public class SpacerFilledPv: SpacerPv {
     convenience init(bg backgroundColor: UIColor = .clear, priority: LayoutPrimitivesPriority = .lowest) {
-        self.init(nil, min: 1000000, max: nil, priority: priority)
+        self.init(nil, min: MAX_PV, max: nil, priority: priority)
     }
 }
 
 public class ViewPv: UIView {
-    convenience init(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = []) {
+    convenience init(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((ViewPv) -> Void)? = nil) {
         self.init()
         self.backgroundColor = backgroundColor
-        apply(primitives)
+        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
     }
 }
 
 public class ImagePv: UIImageView {
-    convenience init(_ named: String, contentMode: ContentMode = .scaleAspectFit, _ primitives: LayoutPrimitives = []) {
+    convenience init(_ named: String, contentMode: ContentMode = .scaleAspectFit, _ primitives: LayoutPrimitives = [], configure: ((ImagePv) -> Void)? = nil) {
         self.init(image: UIImage(named: named))
         self.contentMode = contentMode
         setContentHuggingPriority(.required, for: .horizontal)
         setContentCompressionResistancePriority(.required, for: .vertical)
-        apply(primitives)
+        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
     }
 }
 
 public class LabelPv: UILabel {
-    convenience init(_ text: String, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, _ primitives: LayoutPrimitives = []) {
+    convenience init(_ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, _ primitives: LayoutPrimitives = [], configure: ((LabelPv) -> Void)? = nil) {
         self.init()
-        self.text = text
+        self.text = text ?? NSLocalizedString(tag, comment: "")
         textAlignment = alignment
         self.font = font
         textColor = color
         lineBreakMode = lineBreak
         numberOfLines = lines
-        apply(primitives)
+        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
     }
 }
