@@ -405,8 +405,7 @@ public extension UIView {
 
     @discardableResult
     func addHStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
-        let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing)
-        stack.backgroundColor = backgroundColor
+        let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
 
         if scrollable {
             addHScrollContainer(scrollDelegate: scrollDelegate, .fill())
@@ -419,8 +418,7 @@ public extension UIView {
 
     @discardableResult
     func addVStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
-        let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing)
-        stack.backgroundColor = backgroundColor
+        let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
 
         if scrollable {
             addVScrollContainer(scrollDelegate: scrollDelegate, .fill())
@@ -501,6 +499,26 @@ public extension UIView {
     @discardableResult
     func apply(_ primitives: LayoutPrimitives...) -> Self {
         return LayoutPrimitivesUtils.apply(to: self, .aggregate(primitives), configure: nil).view
+    }
+
+    @discardableResult
+    func applyWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(.width(constant, priority: priority))
+    }
+
+    @discardableResult
+    func applyWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(.width(percent: percent, priority: priority))
+    }
+
+    @discardableResult
+    func applyHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(.height(constant, priority: priority))
+    }
+
+    @discardableResult
+    func applyHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(.height(percent: percent, priority: priority))
     }
 
     @discardableResult
@@ -600,7 +618,7 @@ public class SpacerPv: UIView {
 }
 
 public class SpacerFilledPv: SpacerPv {
-    convenience init(bg backgroundColor: UIColor = .clear, priority: LayoutPrimitivesPriority = .lowest) {
+    convenience init(priority: LayoutPrimitivesPriority = .lowest) {
         self.init(nil, min: MAX_PV, max: nil, priority: priority)
     }
 }
@@ -626,7 +644,7 @@ public class ImagePv: UIImageView {
 public class LabelPv: UILabel {
     convenience init(_ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, _ primitives: LayoutPrimitives = [], configure: ((LabelPv) -> Void)? = nil) {
         self.init()
-        self.text = text ?? NSLocalizedString(tag, comment: "")
+        self.text = text ?? (!tag.isEmpty ? NSLocalizedString(tag, comment: "") : nil)
         textAlignment = alignment
         self.font = font
         textColor = color
