@@ -502,23 +502,33 @@ public extension UIView {
     }
 
     @discardableResult
-    func applyWidth(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
-        return apply(.width(constant, priority: priority))
+    func applyWidth(_ constant: CGFloat? = nil, percent: CGFloat = 1.0, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(constant != nil ? .width(constant ?? 0, priority: priority) : .width(percent: percent, priority: priority))
     }
 
     @discardableResult
-    func applyWidth(percent: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
-        return apply(.width(percent: percent, priority: priority))
+    func applyMinWidth(_ constant: CGFloat? = nil, percent: CGFloat = 1.0, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(constant != nil ? .minWidth(constant ?? 0, priority: priority) : .minWidth(percent: percent, priority: priority))
     }
 
     @discardableResult
-    func applyHeight(_ constant: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
-        return apply(.height(constant, priority: priority))
+    func applyMaxWidth(_ constant: CGFloat? = nil, percent: CGFloat = 1.0, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(constant != nil ? .maxWidth(constant ?? 0, priority: priority) : .maxWidth(percent: percent, priority: priority))
     }
 
     @discardableResult
-    func applyHeight(percent: CGFloat, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
-        return apply(.height(percent: percent, priority: priority))
+    func applyHeight(_ constant: CGFloat? = nil, percent: CGFloat = 1.0, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(constant != nil ? .height(constant ?? 0, priority: priority) : .height(percent: percent, priority: priority))
+    }
+
+    @discardableResult
+    func applyMinHeight(_ constant: CGFloat? = nil, percent: CGFloat = 1.0, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(constant != nil ? .minHeight(constant ?? 0, priority: priority) : .minHeight(percent: percent, priority: priority))
+    }
+
+    @discardableResult
+    func applyMaxHeight(_ constant: CGFloat? = nil, percent: CGFloat = 1.0, priority: LayoutPrimitivesPriority = .almostHighest) -> Self {
+        return apply(constant != nil ? .maxHeight(constant ?? 0, priority: priority) : .maxHeight(percent: percent, priority: priority))
     }
 
     @discardableResult
