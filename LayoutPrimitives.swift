@@ -370,6 +370,16 @@ public class LayoutPrimitivesUtils {
         configure?(view)
         return ViewConstraints(view: view, constraints: constraints)
     }
+
+    fileprivate static func applyFixed<T>(to view: T, width: CGFloat?, height: CGFloat?, configure: ((T) -> Void)? = nil) where T: UIView {
+        let primitives: LayoutPrimitives = width == nil && height == nil ? [] :
+            [
+                width != nil ? .width(width ?? 0, priority: .almostHighest) : [],
+                height != nil ? .height(height ?? 0, priority: .almostHighest) : [],
+            ]
+
+        LayoutPrimitivesUtils.apply(to: view, primitives, configure: configure)
+    }
 }
 
 public extension UIView {
@@ -546,14 +556,14 @@ public class StackPv: UIStackView {
         super.init(frame: frame)
     }
 
-    convenience init(axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, configure: ((StackPv) -> Void)? = nil) {
         self.init(frame: .zero)
         self.axis = axis
         self.alignment = alignment
         self.distribution = distribution
         self.spacing = spacing
         self.backgroundColor = backgroundColor
-        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
+        LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 
     @discardableResult
@@ -569,14 +579,14 @@ public class StackPv: UIStackView {
 }
 
 public class VStackPv: StackPv {
-    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) {
-        self.init(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, primitives, configure: configure)
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, configure: ((StackPv) -> Void)? = nil) {
+        self.init(width: width, height: height, axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, configure: configure)
     }
 }
 
 public class HStackPv: StackPv {
-    convenience init(alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((StackPv) -> Void)? = nil) {
-        self.init(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, primitives, configure: configure)
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, configure: ((StackPv) -> Void)? = nil) {
+        self.init(width: width, height: height, axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, configure: configure)
     }
 }
 
@@ -634,25 +644,25 @@ public class SpacerFilledPv: SpacerPv {
 }
 
 public class ViewPv: UIView {
-    convenience init(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = [], configure: ((ViewPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, bg backgroundColor: UIColor = .clear, configure: ((ViewPv) -> Void)? = nil) {
         self.init()
         self.backgroundColor = backgroundColor
-        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
+        LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 }
 
 public class ImagePv: UIImageView {
-    convenience init(_ named: String, contentMode: ContentMode = .scaleAspectFit, _ primitives: LayoutPrimitives = [], configure: ((ImagePv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ named: String, contentMode: ContentMode = .scaleAspectFit, configure: ((ImagePv) -> Void)? = nil) {
         self.init(image: UIImage(named: named))
         self.contentMode = contentMode
         setContentHuggingPriority(.required, for: .horizontal)
         setContentCompressionResistancePriority(.required, for: .vertical)
-        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
+        LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 }
 
 public class LabelPv: UILabel {
-    convenience init(_ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, _ primitives: LayoutPrimitives = [], configure: ((LabelPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, configure: ((LabelPv) -> Void)? = nil) {
         self.init()
         self.text = text ?? (!tag.isEmpty ? NSLocalizedString(tag, comment: "") : nil)
         textAlignment = alignment
@@ -660,6 +670,6 @@ public class LabelPv: UILabel {
         textColor = color
         lineBreakMode = lineBreak
         numberOfLines = lines
-        LayoutPrimitivesUtils.apply(to: self, primitives, configure: configure)
+        LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 }
