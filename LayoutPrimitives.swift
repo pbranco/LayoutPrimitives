@@ -8,6 +8,8 @@
 import UIKit
 
 public let MAX_PV: CGFloat = 1000000
+public typealias sp = SpacerPv
+public typealias spfilled = SpacerFilledPv
 
 public enum LayoutPrimitivesPriority: Float {
     case highest = 1000, almostHighest = 999, high = 750, medium = 500, low = 250, almostLowest = 2, lowest = 1
@@ -567,11 +569,16 @@ public class StackPv: UIStackView {
     }
 
     @discardableResult
-    func addArranged(_ views: UIView...) -> Self {
+    func addArranged(_ views: UIView?...) -> Self {
         for view in views {
+            guard let view = view else {
+                continue
+            }
+
             if let spacer = view as? SpacerPv {
                 spacer.applySpacing(axis: axis)
             }
+
             addArrangedSubview(view)
         }
         return self
