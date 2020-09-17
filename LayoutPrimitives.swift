@@ -583,6 +583,32 @@ public class StackPv: UIStackView {
         }
         return self
     }
+
+    @discardableResult
+    func removeFirst(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
+        guard let subview = arrangedSubviews.first(where: { predicate($0) }) else { return nil }
+        removeCompletely(subview: subview)
+        return subview
+    }
+
+    @discardableResult
+    func removeLast(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
+        guard let subview = arrangedSubviews.last(where: { predicate($0) }) else { return nil }
+        removeCompletely(subview: subview)
+        return subview
+    }
+
+    func removeAll(where predicate: (UIView) -> Bool = { _ in true }) {
+        let subviews = arrangedSubviews.filter { predicate($0) }
+        for subview in subviews {
+            removeCompletely(subview: subview)
+        }
+    }
+
+    func removeCompletely(subview: UIView) {
+        removeArrangedSubview(subview)
+        subview.removeFromSuperview()
+    }
 }
 
 public class VStackPv: StackPv {
