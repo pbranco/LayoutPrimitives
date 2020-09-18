@@ -16,16 +16,6 @@ public enum LayoutPrimitivesPriority: Float {
 }
 
 public enum LayoutPrimitives {
-    case constrained(
-        view1: UIView,
-        attr1: NSLayoutConstraint.Attribute,
-        relation: NSLayoutConstraint.Relation,
-        view2: UIView,
-        attr2: NSLayoutConstraint.Attribute,
-        multiplier: CGFloat = 1,
-        constant: CGFloat = 0,
-        priority: LayoutPrimitivesPriority = .highest
-    )
     case relative(
         toView: UIView?, // whenever toView is nil we consider relative to parent
         attr1: NSLayoutConstraint.Attribute,
@@ -81,10 +71,6 @@ public extension LayoutPrimitives {
 
     fileprivate func getConstraintsRecursive(for view: UIView, result: inout [NSLayoutConstraint]) {
         switch self {
-        case let .constrained(view1, attr1, relation, view2, attr2, multiplier, constant, priority):
-            let constraint = NSLayoutConstraint(item: view1, attribute: attr1, relatedBy: relation, toItem: view2, attribute: attr2, multiplier: multiplier, constant: constant)
-            constraint.priority = UILayoutPriority(rawValue: priority.rawValue)
-            result.append(constraint)
         case let .relative(toView, attr1, relation, attr2, multiplier, constant, priority):
             var relatedView: UIView? = toView
 
@@ -416,8 +402,8 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
-        let stack = StackPv(axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
+    func addHStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((HStackPv) -> Void)? = nil) -> HStackPv {
+        let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
 
         if scrollable {
             addHScrollContainer(scrollDelegate: scrollDelegate, .fill())
@@ -429,8 +415,8 @@ public extension UIView {
     }
 
     @discardableResult
-    func addVStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> StackPv {
-        let stack = StackPv(axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
+    func addVStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((VStackPv) -> Void)? = nil) -> VStackPv {
+        let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
 
         if scrollable {
             addVScrollContainer(scrollDelegate: scrollDelegate, .fill())
@@ -545,7 +531,7 @@ public extension UIView {
 
     @discardableResult
     func applyConstraint(relativeTo relatedView: UIView, attr1: NSLayoutConstraint.Attribute, relation: NSLayoutConstraint.Relation, attr2: NSLayoutConstraint.Attribute, multiplier: CGFloat = 1, constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> NSLayoutConstraint {
-        return LayoutPrimitivesUtils.apply(to: self, .constrained(view1: self, attr1: attr1, relation: relation, view2: relatedView, attr2: attr2, multiplier: multiplier, constant: constant, priority: priority), configure: nil).constraints[0]
+        return LayoutPrimitivesUtils.apply(to: self, .relative(toView: relatedView, attr1: attr1, relation: relation, attr2: attr2, multiplier: multiplier, constant: constant, priority: priority), configure: nil).constraints[0]
     }
 }
 
