@@ -402,55 +402,51 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((HStackPv) -> Void)? = nil) -> HStackPv {
-        let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
-
-        if scrollable {
-            addHScrollContainer(scrollDelegate: scrollDelegate, .fill())
-                .add(stack, primitives, configure: configure)
-            return stack
-        }
-
-        return add(stack, primitives, configure: configure)
+    func addHStack(embedded: Bool = false, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> HStackPv {
+        let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: .clear)
+        addStack(stack, embedded, scrollable, scrollDelegate, primitives, configure)
+        return stack
     }
 
     @discardableResult
-    func addVStack(bg backgroundColor: UIColor = .clear, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((VStackPv) -> Void)? = nil) -> VStackPv {
-        let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor)
+    func addVStack(embedded: Bool = false, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> VStackPv {
+        let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: .clear)
+        addStack(stack, embedded, scrollable, scrollDelegate, primitives, configure)
+        return stack
+    }
 
-        if scrollable {
-            addVScrollContainer(scrollDelegate: scrollDelegate, .fill())
-                .add(stack, primitives, configure: configure)
-            return stack
+    private func addStack(_ stack: StackPv, _ embedded: Bool, _ scrollable: Bool, _ scrollDelegate: UIScrollViewDelegate?, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
+        if embedded {
+            add(ViewPv(), primitives)
+                .add(stack, .fill(priority: .almostHighest), configure: configure)
+            return
         }
 
-        return add(stack, primitives, configure: configure)
+        if scrollable {
+            addScrollContainer(axis: stack.axis, scrollDelegate: scrollDelegate, primitives)
+                .add(stack, .fill(priority: .almostHighest), configure: configure)
+            return
+        }
+
+        add(stack, primitives, configure: configure)
     }
 
     @discardableResult
-    func addHScrollContainer<T>(_ container: T = UIView() as! T, bg backgroundColor: UIColor = .clear, scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
-        container.backgroundColor = backgroundColor
+    func addScrollContainer(axis: NSLayoutConstraint.Axis, scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((ViewPv) -> Void)? = nil) -> ViewPv {
         let scroller = addScroller(.fill())
         scroller.delegate = scrollDelegate
-        scroller.add(container, [primitives, .equalHeights()], configure: configure)
+        let container = ViewPv()
+        scroller.add(container, [primitives, axis == .vertical ? .equalWidths() : .equalHeights()], configure: configure)
         return container
     }
 
     @discardableResult
-    func addVScrollContainer<T>(_ container: T = UIView() as! T, bg backgroundColor: UIColor = .clear, scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
-        container.backgroundColor = backgroundColor
-        let scroller = addScroller(.fill())
-        scroller.delegate = scrollDelegate
-        scroller.add(container, [primitives, .equalWidths()], configure: configure)
-        return container
-    }
-
-    @discardableResult
-    func addScroller(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives, configure: ((UIScrollView) -> Void)? = nil) -> UIScrollView {
+    func addScroller(scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((UIScrollView) -> Void)? = nil) -> UIScrollView {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
         scrollView.showsVerticalScrollIndicator = false
-        scrollView.backgroundColor = backgroundColor
+        scrollView.backgroundColor = .clear
+        scrollView.delegate = scrollDelegate
         add(scrollView, primitives, configure: configure)
         return scrollView
     }
@@ -555,8 +551,13 @@ public class StackPv: UIStackView {
     }
 
     @discardableResult
-    func addArranged(_ views: UIView?...) -> Self {
-        for view in views {
+    func addArranged(_ subviews: UIView?...) -> Self {
+        return addArranged(subviews: subviews)
+    }
+
+    @discardableResult
+    func addArranged(subviews: [UIView?]) -> Self {
+        for view in subviews {
             guard let view = view else {
                 continue
             }
