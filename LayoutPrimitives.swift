@@ -15,6 +15,10 @@ public enum LayoutPrimitivesPriority: Float {
     case highest = 1000, almostHighest = 999, high = 750, medium = 500, low = 250, almostLowest = 2, lowest = 1
 }
 
+public enum LayoutPrimitivesStackType {
+    case normal, embedded, scrollable(delegate: UIScrollViewDelegate? = nil)
+}
+
 public enum LayoutPrimitives {
     case relative(
         toView: UIView?, // whenever toView is nil we consider relative to parent
@@ -402,30 +406,31 @@ public extension UIView {
     }
 
     @discardableResult
-    func addHStack(embedded: Bool = false, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> HStackPv {
+    func addHStack(type: LayoutPrimitivesStackType = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> HStackPv {
         let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: .clear)
-        addStack(stack, embedded, scrollable, scrollDelegate, primitives, configure)
+        addStack(stack, type, primitives, configure)
         return stack
     }
 
     @discardableResult
-    func addVStack(embedded: Bool = false, scrollable: Bool = false, scrollDelegate: UIScrollViewDelegate? = nil, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> VStackPv {
+    func addVStack(type: LayoutPrimitivesStackType = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> VStackPv {
         let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: .clear)
-        addStack(stack, embedded, scrollable, scrollDelegate, primitives, configure)
+        addStack(stack, type, primitives, configure)
         return stack
     }
 
-    private func addStack(_ stack: StackPv, _ embedded: Bool, _ scrollable: Bool, _ scrollDelegate: UIScrollViewDelegate?, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
-        if embedded {
+    private func addStack(_ stack: StackPv, _ type: LayoutPrimitivesStackType, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
+        switch type {
+        case .embedded:
             add(ViewPv(), primitives)
                 .add(stack, .fill(priority: .almostHighest), configure: configure)
             return
-        }
-
-        if scrollable {
-            addScrollContainer(axis: stack.axis, scrollDelegate: scrollDelegate, primitives)
+        case let .scrollable(delegate):
+            addScrollContainer(axis: stack.axis, scrollDelegate: delegate, primitives)
                 .add(stack, .fill(priority: .almostHighest), configure: configure)
             return
+        default:
+            break
         }
 
         add(stack, primitives, configure: configure)
