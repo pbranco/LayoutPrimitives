@@ -581,15 +581,19 @@ public class StackPv: UIStackView {
     }
 
     func first(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
-        return arrangedSubviews.first(where: { predicate($0) })
+        return arrangedSubviews.first(where: predicate)
     }
 
     func last(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
-        return arrangedSubviews.last(where: { predicate($0) })
+        return arrangedSubviews.last(where: predicate)
     }
 
     func filter(where predicate: (UIView) -> Bool) -> [UIView] {
-        return arrangedSubviews.filter { predicate($0) }
+        return arrangedSubviews.filter(predicate)
+    }
+
+    func forEach(_ body: (UIView) -> Void) {
+        arrangedSubviews.forEach(body)
     }
 
     func animate(duration: TimeInterval, delay: TimeInterval, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
