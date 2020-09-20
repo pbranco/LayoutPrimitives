@@ -580,30 +580,25 @@ public class StackPv: UIStackView {
         return self
     }
 
-    @discardableResult
-    func removeFirst(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
-        guard let subview = arrangedSubviews.first(where: { predicate($0) }) else { return nil }
-        removeCompletely(subview: subview)
-        return subview
+    func first(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
+        return arrangedSubviews.first(where: { predicate($0) })
     }
 
-    @discardableResult
-    func removeLast(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
-        guard let subview = arrangedSubviews.last(where: { predicate($0) }) else { return nil }
-        removeCompletely(subview: subview)
-        return subview
+    func last(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
+        return arrangedSubviews.last(where: { predicate($0) })
     }
 
-    func removeAll(where predicate: (UIView) -> Bool = { _ in true }) {
-        let subviews = arrangedSubviews.filter { predicate($0) }
-        for subview in subviews {
-            removeCompletely(subview: subview)
+    func filter(where predicate: (UIView) -> Bool) -> [UIView] {
+        return arrangedSubviews.filter { predicate($0) }
+    }
+
+    func animate(duration: TimeInterval, delay: TimeInterval, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            UIView.animate(withDuration: duration, animations: {
+                animations()
+                self?.layoutIfNeeded()
+            }, completion: completion)
         }
-    }
-
-    func removeCompletely(subview: UIView) {
-        removeArrangedSubview(subview)
-        subview.removeFromSuperview()
     }
 }
 
