@@ -407,14 +407,14 @@ public extension UIView {
 
     @discardableResult
     func addHStack(type: LayoutPrimitivesStackType = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> HStackPv {
-        let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: .clear)
+        let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing)
         addStack(stack, type, primitives, configure)
         return stack
     }
 
     @discardableResult
     func addVStack(type: LayoutPrimitivesStackType = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> VStackPv {
-        let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing, bg: .clear)
+        let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing)
         addStack(stack, type, primitives, configure)
         return stack
     }
@@ -545,14 +545,18 @@ public class StackPv: UIStackView {
         super.init(frame: frame)
     }
 
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, configure: ((StackPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, configure: ((StackPv) -> Void)? = nil) {
         self.init(frame: .zero)
         self.axis = axis
         self.alignment = alignment
         self.distribution = distribution
         self.spacing = spacing
-        self.backgroundColor = backgroundColor
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
+    }
+
+    convenience init(axis: NSLayoutConstraint.Axis = .vertical, subviews: [UIView?]) {
+        self.init(width: nil, height: nil, axis: axis)
+        addArranged(subviews: subviews)
     }
 
     @discardableResult
@@ -604,14 +608,22 @@ public class StackPv: UIStackView {
 }
 
 public class VStackPv: StackPv {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, configure: ((StackPv) -> Void)? = nil) {
-        self.init(width: width, height: height, axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, configure: configure)
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, configure: ((StackPv) -> Void)? = nil) {
+        self.init(width: width, height: height, axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, configure: configure)
+    }
+
+    convenience init(_ subviews: UIView?...) {
+        self.init(axis: .vertical, subviews: subviews)
     }
 }
 
 public class HStackPv: StackPv {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, bg backgroundColor: UIColor = .clear, configure: ((StackPv) -> Void)? = nil) {
-        self.init(width: width, height: height, axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, bg: backgroundColor, configure: configure)
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, configure: ((StackPv) -> Void)? = nil) {
+        self.init(width: width, height: height, axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, configure: configure)
+    }
+
+    convenience init(_ subviews: UIView?...) {
+        self.init(axis: .horizontal, subviews: subviews)
     }
 }
 
