@@ -55,6 +55,9 @@ public enum LayoutPrimitives {
         constant: CGFloat = 0,
         priority: LayoutPrimitivesPriority = .highest
     )
+    case constraint(
+        _ constraint: NSLayoutConstraint
+    )
     indirect case aggregate(
         [LayoutPrimitives]
     )
@@ -121,6 +124,8 @@ public extension LayoutPrimitives {
         case let .ratio(multiplier, constant, priority):
             let constraint = NSLayoutConstraint(item: view, attribute: NSLayoutConstraint.Attribute.width, relatedBy: NSLayoutConstraint.Relation.equal, toItem: view, attribute: NSLayoutConstraint.Attribute.height, multiplier: multiplier, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority.rawValue)
+            result.append(constraint)
+        case let .constraint(constraint):
             result.append(constraint)
         case let .aggregate(primitives):
             for primitive in primitives {
