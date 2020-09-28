@@ -15,7 +15,7 @@ public enum LayoutPrimitivesPriority: Float {
     case highest = 1000, almostHighest = 999, high = 750, medium = 500, low = 250, almostLowest = 2, lowest = 1
 }
 
-public enum LayoutPrimitivesStackType {
+public enum LayoutPrimitivesStackStyle {
     case normal, embedded, scrollable(delegate: UIScrollViewDelegate? = nil)
 }
 
@@ -406,26 +406,21 @@ public extension UIView {
     }
 
     @discardableResult
-    func addDefaultSubview(bg backgroundColor: UIColor = .clear, _ primitives: LayoutPrimitives = .fill(), configure: ((UIView) -> Void)? = nil) -> UIView {
-        return add(ViewPv(bg: backgroundColor), primitives, configure: configure)
-    }
-
-    @discardableResult
-    func addHStack(type: LayoutPrimitivesStackType = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> HStackPv {
+    func addHStack(style: LayoutPrimitivesStackStyle = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> HStackPv {
         let stack = HStackPv(alignment: alignment, distribution: distribution, spacing: spacing)
-        addStack(stack, type, primitives, configure)
+        addStack(stack, style, primitives, configure)
         return stack
     }
 
     @discardableResult
-    func addVStack(type: LayoutPrimitivesStackType = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> VStackPv {
+    func addVStack(style: LayoutPrimitivesStackStyle = .normal, alignment: UIStackView.Alignment = .fill, distribution: UIStackView.Distribution = .fill, spacing: CGFloat = 0, _ primitives: LayoutPrimitives, configure: ((StackPv) -> Void)? = nil) -> VStackPv {
         let stack = VStackPv(alignment: alignment, distribution: distribution, spacing: spacing)
-        addStack(stack, type, primitives, configure)
+        addStack(stack, style, primitives, configure)
         return stack
     }
 
-    private func addStack(_ stack: StackPv, _ type: LayoutPrimitivesStackType, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
-        switch type {
+    private func addStack(_ stack: StackPv, _ style: LayoutPrimitivesStackStyle, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
+        switch style {
         case .embedded:
             add(ViewPv(), primitives)
                 .add(stack, .fill(priority: .almostHighest), configure: configure)
@@ -443,10 +438,10 @@ public extension UIView {
 
     @discardableResult
     func addScrollContainer(axis: NSLayoutConstraint.Axis, scrollDelegate: UIScrollViewDelegate? = nil, _ primitives: LayoutPrimitives, configure: ((ViewPv) -> Void)? = nil) -> ViewPv {
-        let scroller = addScroller(.fill())
+        let scroller = addScroller(primitives)
         scroller.delegate = scrollDelegate
         let container = ViewPv()
-        scroller.add(container, [primitives, axis == .vertical ? .equalWidths() : .equalHeights()], configure: configure)
+        scroller.add(container, [.fill(), axis == .vertical ? .equalWidths() : .equalHeights()], configure: configure)
         return container
     }
 
@@ -703,14 +698,14 @@ public class ImagePv: UIImageView {
 }
 
 public class LabelPv: UILabel {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), color: UIColor = .black, lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, configure: ((LabelPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, configure: ((LabelPv) -> Void)? = nil) {
         self.init()
         self.text = text ?? (!tag.isEmpty ? NSLocalizedString(tag, comment: "") : nil)
         textAlignment = alignment
         self.font = font
-        textColor = color
         lineBreakMode = lineBreak
         numberOfLines = lines
+        textColor = color
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 }
