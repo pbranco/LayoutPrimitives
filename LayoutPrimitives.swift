@@ -580,6 +580,16 @@ public class StackPv: UIStackView {
         return self
     }
 
+    func removeAllArrangedSubviews() {
+        let removedSubviews = arrangedSubviews.reduce([]) { (allSubviews, subview) -> [UIView] in
+            self.removeArrangedSubview(subview)
+            return allSubviews + [subview]
+        }
+
+        NSLayoutConstraint.deactivate(removedSubviews.flatMap { $0.constraints })
+        removedSubviews.forEach { $0.removeFromSuperview() }
+    }
+
     func first(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
         return arrangedSubviews.first(where: predicate)
     }
@@ -688,8 +698,12 @@ public class ViewPv: UIView {
 }
 
 public class ImagePv: UIImageView {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ named: String, contentMode: ContentMode = .scaleAspectFit, configure: ((ImagePv) -> Void)? = nil) {
-        self.init(image: UIImage(named: named))
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ named: String? = nil, contentMode: ContentMode = .scaleAspectFit, configure: ((ImagePv) -> Void)? = nil) {
+        if let named = named {
+            self.init(image: UIImage(named: named))
+        } else {
+            self.init()
+        }
         self.contentMode = contentMode
         setContentHuggingPriority(.required, for: .horizontal)
         setContentCompressionResistancePriority(.required, for: .vertical)
