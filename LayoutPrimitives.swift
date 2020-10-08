@@ -368,7 +368,7 @@ public class LayoutPrimitivesUtils {
         return ViewConstraints(view: view, constraints: constraints)
     }
 
-    fileprivate static func applyFixed<T>(to view: T, width: CGFloat?, height: CGFloat?, configure: ((T) -> Void)? = nil) where T: UIView {
+    static func applyFixed<T>(to view: T, width: CGFloat?, height: CGFloat?, configure: ((T) -> Void)? = nil) where T: UIView {
         let primitives: LayoutPrimitives = width == nil && height == nil ? [] :
             [
                 width != nil ? .width(width ?? 0, priority: .almostHighest) : [],
@@ -712,9 +712,12 @@ public class ImagePv: UIImageView {
 }
 
 public class LabelPv: UILabel {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, tag: String = "", alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, configure: ((LabelPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, tag: String = "", attributedText: NSAttributedString? = nil, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, configure: ((LabelPv) -> Void)? = nil) {
         self.init()
         self.text = text ?? (!tag.isEmpty ? NSLocalizedString(tag, comment: "") : nil)
+        if let attributedText = attributedText {
+            self.attributedText = attributedText
+        }
         textAlignment = alignment
         self.font = font
         lineBreakMode = lineBreak
