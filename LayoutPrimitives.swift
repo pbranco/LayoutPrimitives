@@ -368,7 +368,7 @@ public class LayoutPrimitivesUtils {
         return ViewConstraints(view: view, constraints: constraints)
     }
 
-    static func applyFixed<T>(to view: T, width: CGFloat?, height: CGFloat?, configure: ((T) -> Void)? = nil) where T: UIView {
+    fileprivate static func applyFixed<T>(to view: T, width: CGFloat?, height: CGFloat?, configure: ((T) -> Void)? = nil) where T: UIView {
         let primitives: LayoutPrimitives = width == nil && height == nil ? [] :
             [
                 width != nil ? .width(width ?? 0, priority: .almostHighest) : [],
