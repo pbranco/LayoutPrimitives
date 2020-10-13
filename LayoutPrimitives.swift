@@ -209,6 +209,11 @@ public extension LayoutPrimitives {
     static func right(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .trailing, attr2: .trailing, constant: -constant, priority: priority)
     }
+    
+    /// The 'trailing' primitive is equivalent to the 'right' primitive
+    static func trailing(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return right(to: view, constant, priority: priority)
+    }
 
     /// The 'bottom' primitive is equivalent to the following constraint:
     ///    bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: constant)
@@ -220,6 +225,11 @@ public extension LayoutPrimitives {
     ///    leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: constant)
     static func left(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .leading, attr2: .leading, constant: constant, priority: priority)
+    }
+    
+    /// The 'leading' primitive is equivalent to the 'left' primitive
+    static func leading(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
+        return left(to: view, constant, priority: priority)
     }
 
     /// The 'align' primitive is equivalent to the following constraints:
@@ -606,7 +616,7 @@ public class StackPv: UIStackView {
         arrangedSubviews.forEach(body)
     }
 
-    func animate(duration: TimeInterval, delay: TimeInterval, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
+    func animate(duration: TimeInterval, delay: TimeInterval = 0, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             UIView.animate(withDuration: duration, animations: {
                 animations()
