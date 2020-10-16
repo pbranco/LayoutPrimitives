@@ -8,8 +8,8 @@
 import UIKit
 
 public let MAX_PV: CGFloat = 1000000
-public typealias sp = SpacerPv
-public typealias spfilled = SpacerFilledPv
+public let sp: (CGFloat) -> SpacerPv = { spacing in SpacerPv(spacing) }
+public let spfilled: () -> SpacerFilledPv = { SpacerFilledPv() }
 
 public enum LayoutPrimitivesPriority: Float {
     case highest = 1000, almostHighest = 999, high = 750, medium = 500, low = 250, almostLowest = 2, lowest = 1
@@ -209,7 +209,7 @@ public extension LayoutPrimitives {
     static func right(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .trailing, attr2: .trailing, constant: -constant, priority: priority)
     }
-    
+
     /// The 'trailing' primitive is equivalent to the 'right' primitive
     static func trailing(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return right(to: view, constant, priority: priority)
@@ -226,7 +226,7 @@ public extension LayoutPrimitives {
     static func left(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return .relative(toView: view, attr1: .leading, attr2: .leading, constant: constant, priority: priority)
     }
-    
+
     /// The 'leading' primitive is equivalent to the 'left' primitive
     static func leading(to view: UIView? = nil, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
         return left(to: view, constant, priority: priority)
