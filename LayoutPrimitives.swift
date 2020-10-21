@@ -38,10 +38,10 @@ public enum LayoutPrimitives {
         priority: LayoutPrimitivesPriority = .highest
     )
     case alignToSafeArea(
-        top: CGFloat = 0,
-        right: CGFloat = 0,
-        bottom: CGFloat = 0,
-        left: CGFloat = 0,
+        top: CGFloat? = nil,
+        right: CGFloat,
+        bottom: CGFloat? = nil,
+        left: CGFloat,
         priority: LayoutPrimitivesPriority = .highest
     )
     case fixed(
@@ -109,12 +109,16 @@ public extension LayoutPrimitives {
         case let .alignToSafeArea(top, right, bottom, left, priority):
             guard let superview = view.superview else { return }
 
-            let constraints: [NSLayoutConstraint] = [
+            var constraints: [NSLayoutConstraint] = [
                 view.leadingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.leadingAnchor, constant: left),
                 view.trailingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.trailingAnchor, constant: -right),
-                view.topAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.topAnchor, constant: top),
-                view.bottomAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.bottomAnchor, constant: -bottom),
             ]
+            if let top = top {
+                constraints.append(view.topAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.topAnchor, constant: top))
+            }
+            if let bottom = bottom {
+                constraints.append(view.bottomAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.bottomAnchor, constant: -bottom))
+            }
             constraints.forEach { $0.priority = UILayoutPriority(rawValue: priority.rawValue) }
             result.append(contentsOf: constraints)
         case let .fixed(attr, relation, constant, priority):
@@ -430,14 +434,18 @@ public extension UIView {
     }
 
     private func addStack(_ stack: StackPv, _ style: LayoutPrimitivesStackStyle, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
+        stack.isLayoutMarginsRelativeArrangement = true
+
+        let innerPrimitives: LayoutPrimitives = stack.axis == .vertical ? [.fillWidth(), .fillHeight(priority: .almostHighest)] : [.fillWidth(priority: .almostHighest), .fillHeight()]
+
         switch style {
         case .embedded:
             add(ViewPv(), primitives)
-                .add(stack, .fill(priority: .almostHighest), configure: configure)
+                .add(stack, innerPrimitives, configure: configure)
             return
         case let .scrollable(delegate):
             addScrollContainer(axis: stack.axis, scrollDelegate: delegate, primitives)
-                .add(stack, .fill(priority: .almostHighest), configure: configure)
+                .add(stack, innerPrimitives, configure: configure)
             return
         default:
             break
@@ -574,8 +582,7 @@ public class StackPv: UIStackView {
         return addArranged(subviews: subviews)
     }
 
-    @discardableResult
-    func addArranged(subviews: [UIView?]) -> Self {
+    private func addArranged(subviews: [UIView?]) -> Self {
         for view in subviews {
             guard let view = view else {
                 continue
