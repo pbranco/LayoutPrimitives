@@ -743,3 +743,22 @@ public class LabelPv: UILabel {
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 }
+
+public class TextViewPv: UITextView {
+    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, attributedText: NSAttributedString? = nil, font: UIFont = .preferredFont(forTextStyle: .body), editable: Bool = false, scrollEnabled: Bool = false, dataDetectorTypes: UIDataDetectorTypes = [.link], color: UIColor = .black, tintColor: UIColor? = nil, configure: ((TextViewPv) -> Void)? = nil) {
+        self.init()
+        self.text = text
+        if let attributedText = attributedText {
+            self.attributedText = attributedText
+        }
+        self.font = font
+        isEditable = editable
+        isScrollEnabled = scrollEnabled
+        self.dataDetectorTypes = dataDetectorTypes
+        textColor = color
+        if let tintColor = tintColor {
+            self.tintColor = tintColor
+        }
+        LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
+    }
+}
