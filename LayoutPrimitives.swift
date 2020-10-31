@@ -16,7 +16,7 @@ public enum LayoutPrimitivesPriority: Float {
 }
 
 public enum LayoutPrimitivesStackStyle {
-    case normal, embedded, scrollable(delegate: UIScrollViewDelegate? = nil)
+    case normal, embedded, scrollable(delegate: UIScrollViewDelegate? = nil), none
 }
 
 public enum LayoutPrimitives {
@@ -393,7 +393,7 @@ public class LayoutPrimitivesUtils {
     }
 }
 
-public extension UIView {
+extension UIView {
     private struct Holder {
         static let semaphore = DispatchSemaphore(value: 1)
         static var childPrimitives = [String: LayoutPrimitives]()
@@ -436,7 +436,7 @@ public extension UIView {
     private func addStack(_ stack: StackPv, _ style: LayoutPrimitivesStackStyle, _ primitives: LayoutPrimitives, _ configure: ((StackPv) -> Void)?) {
         stack.isLayoutMarginsRelativeArrangement = true
 
-        let innerPrimitives: LayoutPrimitives = stack.axis == .vertical ? [.fillWidth(), .fillHeight(priority: .almostHighest)] : [.fillWidth(priority: .almostHighest), .fillHeight()]
+        let innerPrimitives: LayoutPrimitives = (stack.axis == .vertical) ? [.fillWidth(), .fillHeight(priority: .almostHighest)] : [.fillWidth(priority: .almostHighest), .fillHeight()]
 
         switch style {
         case .embedded:
@@ -447,6 +447,8 @@ public extension UIView {
             addScrollContainer(axis: stack.axis, scrollDelegate: delegate, primitives)
                 .add(stack, innerPrimitives, configure: configure)
             return
+        case .none:
+            stack.isLayoutMarginsRelativeArrangement = false
         default:
             break
         }
@@ -554,8 +556,8 @@ public extension UIView {
     }
 }
 
-public class StackPv: UIStackView {
-    required init(coder: NSCoder) {
+open class StackPv: UIStackView {
+    public required init(coder: NSCoder) {
         super.init(coder: coder)
     }
 
@@ -563,7 +565,13 @@ public class StackPv: UIStackView {
         super.init(frame: frame)
     }
 
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, axis: NSLayoutConstraint.Axis = .vertical, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, configure: ((StackPv) -> Void)? = nil) {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     axis: NSLayoutConstraint.Axis = .vertical,
+                     alignment: Alignment = .fill,
+                     distribution: Distribution = .fill,
+                     spacing: CGFloat = 0,
+                     configure: ((StackPv) -> Void)? = nil) {
         self.init(frame: .zero)
         self.axis = axis
         self.alignment = alignment
@@ -582,6 +590,7 @@ public class StackPv: UIStackView {
         return addArranged(subviews: subviews)
     }
 
+    @discardableResult
     private func addArranged(subviews: [UIView?]) -> Self {
         for view in subviews {
             guard let view = view else {
@@ -633,8 +642,13 @@ public class StackPv: UIStackView {
     }
 }
 
-public class VStackPv: StackPv {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, configure: ((StackPv) -> Void)? = nil) {
+open class VStackPv: StackPv {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     alignment: Alignment = .fill,
+                     distribution: Distribution = .fill,
+                     spacing: CGFloat = 0,
+                     configure: ((StackPv) -> Void)? = nil) {
         self.init(width: width, height: height, axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, configure: configure)
     }
 
@@ -643,8 +657,13 @@ public class VStackPv: StackPv {
     }
 }
 
-public class HStackPv: StackPv {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, alignment: Alignment = .fill, distribution: Distribution = .fill, spacing: CGFloat = 0, configure: ((StackPv) -> Void)? = nil) {
+open class HStackPv: StackPv {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     alignment: Alignment = .fill,
+                     distribution: Distribution = .fill,
+                     spacing: CGFloat = 0,
+                     configure: ((StackPv) -> Void)? = nil) {
         self.init(width: width, height: height, axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, configure: configure)
     }
 
@@ -653,14 +672,14 @@ public class HStackPv: StackPv {
     }
 }
 
-public class SpacerPv: UIView {
+open class SpacerPv: UIView {
     var spacing: CGFloat?
     var percent: CGFloat?
     var min: CGFloat?
     var max: CGFloat?
     var priority: LayoutPrimitivesPriority = .highest
 
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
@@ -668,7 +687,12 @@ public class SpacerPv: UIView {
         super.init(frame: frame)
     }
 
-    convenience init(_ spacing: CGFloat? = nil, percent: CGFloat? = nil, min: CGFloat? = nil, max: CGFloat? = nil, bg backgroundColor: UIColor = .clear, priority: LayoutPrimitivesPriority = .highest) {
+    convenience init(_ spacing: CGFloat? = nil,
+                     percent: CGFloat? = nil,
+                     min: CGFloat? = nil,
+                     max: CGFloat? = nil,
+                     bg backgroundColor: UIColor = .clear,
+                     priority: LayoutPrimitivesPriority = .highest) {
         self.init(frame: .zero)
         self.spacing = spacing
         self.percent = percent
@@ -700,22 +724,29 @@ public class SpacerPv: UIView {
     }
 }
 
-public class SpacerFilledPv: SpacerPv {
+open class SpacerFilledPv: SpacerPv {
     convenience init(priority: LayoutPrimitivesPriority = .lowest) {
         self.init(nil, min: MAX_PV, max: nil, priority: priority)
     }
 }
 
-public class ViewPv: UIView {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, bg backgroundColor: UIColor = .clear, configure: ((ViewPv) -> Void)? = nil) {
+open class ViewPv: UIView {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     bg backgroundColor: UIColor = .clear,
+                     configure: ((ViewPv) -> Void)? = nil) {
         self.init()
         self.backgroundColor = backgroundColor
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 }
 
-public class ImagePv: UIImageView {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ named: String? = nil, contentMode: ContentMode = .scaleAspectFit, configure: ((ImagePv) -> Void)? = nil) {
+open class ImagePv: UIImageView {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     _ named: String? = nil,
+                     contentMode: ContentMode = .scaleAspectFit,
+                     configure: ((ImagePv) -> Void)? = nil) {
         if let named = named {
             self.init(image: UIImage(named: named))
         } else {
@@ -728,8 +759,18 @@ public class ImagePv: UIImageView {
     }
 }
 
-public class LabelPv: UILabel {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, tag: String = "", attributedText: NSAttributedString? = nil, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, configure: ((LabelPv) -> Void)? = nil) {
+open class LabelPv: UILabel {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     _ text: String? = nil,
+                     tag: String = "",
+                     attributedText: NSAttributedString? = nil,
+                     alignment: NSTextAlignment = .natural,
+                     font: UIFont = .preferredFont(forTextStyle: .body),
+                     lineBreak: NSLineBreakMode = .byWordWrapping,
+                     lines: Int = 0,
+                     color: UIColor = .black,
+                     configure: ((LabelPv) -> Void)? = nil) {
         self.init()
         self.text = text ?? (!tag.isEmpty ? NSLocalizedString(tag, comment: "") : nil)
         if let attributedText = attributedText {
@@ -744,9 +785,18 @@ public class LabelPv: UILabel {
     }
 }
 
-public class TextViewPv: UITextView {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ text: String? = nil, attributedText: NSAttributedString? = nil, font: UIFont = .preferredFont(forTextStyle: .body), editable: Bool = false, scrollEnabled: Bool = false, dataDetectorTypes: UIDataDetectorTypes = [.link], color: UIColor = .black, tintColor: UIColor? = nil, configure: ((TextViewPv) -> Void)? = nil) {
+open class TextViewPv: UITextView, UITextViewDelegate {
+    convenience init(width: CGFloat? = nil,
+                     height: CGFloat? = nil,
+                     _ text: String? = nil,
+                     attributedText: NSAttributedString? = nil,
+                     font: UIFont = .preferredFont(forTextStyle: .body),
+                     editable: Bool = false, scrollEnabled: Bool = false,
+                     dataDetectorTypes: UIDataDetectorTypes = [.link],
+                     color: UIColor = .black, tintColor: UIColor? = nil,
+                     configure: ((TextViewPv) -> Void)? = nil) {
         self.init()
+        delegate = self
         self.text = text
         if let attributedText = attributedText {
             self.attributedText = attributedText
@@ -760,5 +810,9 @@ public class TextViewPv: UITextView {
             self.tintColor = tintColor
         }
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
+    }
+
+    public func textViewDidChangeSelection(_ textView: UITextView) {
+        textView.selectedTextRange = nil
     }
 }

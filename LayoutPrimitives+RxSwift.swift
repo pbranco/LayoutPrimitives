@@ -8,7 +8,7 @@
 import RxSwift
 import UIKit
 
-public extension UIView {
+extension UIView {
     @discardableResult
     func visibility(rxHide: BehaviorSubject<Bool>, disposedBy bag: DisposeBag) -> Self {
         rxHide.bind { [weak self] hide in
@@ -28,7 +28,7 @@ public extension UIView {
     }
 }
 
-public class LabelRx: LabelPv {
+open class LabelRx: LabelPv {
     convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ rxText: BehaviorSubject<String>, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, disposedBy bag: DisposeBag, configure: ((LabelPv) -> Void)? = nil) {
         self.init(width: width, height: height, try? rxText.value(), alignment: alignment, font: font, lineBreak: lineBreak, lines: lines, color: color, configure: configure)
 
