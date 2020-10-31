@@ -265,13 +265,13 @@ public extension LayoutPrimitives {
     /// The 'nextTo' primitive is equivalent to the following constraint:
     ///    leadingAnchor.constraint(equalTo: view.trailingAnchor, constant: constant)
     static func nextTo(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .relative(toView: view, attr1: .left, attr2: .right, constant: constant, priority: priority)
+        return .relative(toView: view, attr1: .leading, attr2: .trailing, constant: constant, priority: priority)
     }
 
     /// The 'nextToSibling' primitive is equivalent to the following constraint:
     ///    leadingAnchor.constraint(equalTo: siblingView.trailingAnchor, constant: constant) // where siblingView is the view just before to the current view
     static func nextToSibling(_ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .relativeToSibling(attr1: .left, attr2: .right, constant: constant, priority: priority)
+        return .relativeToSibling(attr1: .leading, attr2: .trailing, constant: constant, priority: priority)
     }
 
     /// The 'above' primitive is equivalent to the following constraint:
@@ -283,7 +283,7 @@ public extension LayoutPrimitives {
     /// The 'behind' primitive is equivalent to the following constraint:
     ///    trailingAnchor.constraint(equalTo: view.leadingAnchor, constant: -constant)
     static func behind(_ view: UIView, _ constant: CGFloat = 0, priority: LayoutPrimitivesPriority = .highest) -> LayoutPrimitives {
-        return .relative(toView: view, attr1: .right, attr2: .left, constant: -constant, priority: priority)
+        return .relative(toView: view, attr1: .trailing, attr2: .leading, constant: -constant, priority: priority)
     }
 
     /// The 'width' primitive is equivalent to the following constraint:
