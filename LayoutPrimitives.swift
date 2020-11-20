@@ -44,6 +44,13 @@ public enum LayoutPrimitives {
         left: CGFloat,
         priority: LayoutPrimitivesPriority = .highest
     )
+    case alignToMarginsGuide(
+        top: CGFloat? = nil,
+        right: CGFloat,
+        bottom: CGFloat? = nil,
+        left: CGFloat,
+        priority: LayoutPrimitivesPriority = .highest
+    )
     case fixed(
         attr: NSLayoutConstraint.Attribute,
         relation: NSLayoutConstraint.Relation = .equal,
@@ -107,20 +114,9 @@ public extension LayoutPrimitives {
                 }
             }
         case let .alignToSafeArea(top, right, bottom, left, priority):
-            guard let superview = view.superview else { return }
-
-            var constraints: [NSLayoutConstraint] = [
-                view.leadingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.leadingAnchor, constant: left),
-                view.trailingAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.trailingAnchor, constant: -right),
-            ]
-            if let top = top {
-                constraints.append(view.topAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.topAnchor, constant: top))
-            }
-            if let bottom = bottom {
-                constraints.append(view.bottomAnchor.constraint(equalTo: superview.safeAreaLayoutGuide.bottomAnchor, constant: -bottom))
-            }
-            constraints.forEach { $0.priority = UILayoutPriority(rawValue: priority.rawValue) }
-            result.append(contentsOf: constraints)
+            result.append(contentsOf: getAlignConstraints(for: view, isSafeArea: true, top: top, right: right, bottom: bottom, left: left, priority: priority))
+        case let .alignToMarginsGuide(top, right, bottom, left, priority):
+            result.append(contentsOf: getAlignConstraints(for: view, isSafeArea: false, top: top, right: right, bottom: bottom, left: left, priority: priority))
         case let .fixed(attr, relation, constant, priority):
             let constraint = NSLayoutConstraint(item: view, attribute: attr, relatedBy: relation, toItem: nil, attribute: .notAnAttribute, multiplier: 1, constant: constant)
             constraint.priority = UILayoutPriority(rawValue: priority.rawValue)
@@ -136,6 +132,29 @@ public extension LayoutPrimitives {
                 primitive.getConstraintsRecursive(for: view, result: &result)
             }
         }
+    }
+
+    fileprivate func getAlignConstraints(for view: UIView, isSafeArea: Bool, top: CGFloat?, right: CGFloat, bottom: CGFloat?, left: CGFloat, priority: LayoutPrimitivesPriority) -> [NSLayoutConstraint] {
+        guard let superview = view.superview else { return [] }
+
+        var constraints: [NSLayoutConstraint] = [
+            view.leadingAnchor.constraint(equalTo: isSafeArea ? superview.safeAreaLayoutGuide.leadingAnchor : superview.layoutMarginsGuide.leadingAnchor, constant: left),
+            view.trailingAnchor.constraint(equalTo: isSafeArea ? superview.safeAreaLayoutGuide.trailingAnchor : superview.layoutMarginsGuide.trailingAnchor, constant: -right),
+        ]
+
+        if let top = top {
+            constraints.append(view.topAnchor.constraint(equalTo: isSafeArea ? superview.safeAreaLayoutGuide.topAnchor : superview.layoutMarginsGuide.topAnchor, constant: top))
+        }
+
+        if let bottom = bottom {
+            constraints.append(view.bottomAnchor.constraint(equalTo: isSafeArea ? superview.safeAreaLayoutGuide.bottomAnchor : superview.layoutMarginsGuide.bottomAnchor, constant: -bottom))
+        }
+
+        constraints.forEach {
+            $0.priority = UILayoutPriority(rawValue: priority.rawValue)
+        }
+
+        return constraints
     }
 }
 
