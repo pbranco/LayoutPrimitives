@@ -413,25 +413,6 @@ public class LayoutPrimitivesUtils {
 }
 
 extension UIView {
-    private struct Holder {
-        static let semaphore = DispatchSemaphore(value: 1)
-        static var childPrimitives = [String: LayoutPrimitives]()
-    }
-
-    private var childPrimitives: LayoutPrimitives? {
-        get {
-            Holder.semaphore.wait()
-            let primitives = Holder.childPrimitives[description]
-            Holder.semaphore.signal()
-            return primitives
-        }
-        set(newValue) {
-            Holder.semaphore.wait()
-            Holder.childPrimitives[description] = newValue
-            Holder.semaphore.signal()
-        }
-    }
-
     @discardableResult
     func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
         addSubview(subview)
@@ -493,27 +474,6 @@ extension UIView {
         scrollView.delegate = scrollDelegate
         add(scrollView, primitives, configure: configure)
         return scrollView
-    }
-
-    @discardableResult
-    func addChildren(_ subviews: UIView...) -> Self {
-        for view in subviews {
-            addSubview(view)
-            view.applyChildPrimitives()
-            view.childPrimitives = nil
-        }
-        return self
-    }
-
-    private func applyChildPrimitives() {
-        guard let childPrimitives = childPrimitives else { return }
-        apply(childPrimitives)
-    }
-
-    @discardableResult
-    func childWith(_ primitives: LayoutPrimitives...) -> Self {
-        childPrimitives = .aggregate(primitives)
-        return self
     }
 
     @discardableResult
@@ -610,7 +570,7 @@ open class StackPv: UIStackView {
     }
 
     @discardableResult
-    private func addArranged(subviews: [UIView?]) -> Self {
+    func addArranged(subviews: [UIView?]) -> Self {
         for view in subviews {
             guard let view = view else {
                 continue
