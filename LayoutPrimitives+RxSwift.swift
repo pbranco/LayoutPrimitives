@@ -8,7 +8,7 @@
 import RxSwift
 import UIKit
 
-extension UIView {
+public extension UIView {
     @discardableResult
     func visibility(rxHide: BehaviorSubject<Bool>, disposedBy bag: DisposeBag) -> Self {
         rxHide.bind { [weak self] hide in
@@ -29,7 +29,7 @@ extension UIView {
 }
 
 open class LabelRx: LabelPv {
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ rxText: BehaviorSubject<String>, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, disposedBy bag: DisposeBag, configure: ((LabelPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil, height: CGFloat? = nil, _ rxText: BehaviorSubject<String>, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, disposedBy bag: DisposeBag, configure: ((LabelPv) -> Void)? = nil) {
         self.init(width: width, height: height, try? rxText.value(), alignment: alignment, font: font, lineBreak: lineBreak, lines: lines, color: color, configure: configure)
 
         rxText.bind { [weak self] text in
@@ -37,7 +37,7 @@ open class LabelRx: LabelPv {
         }.disposed(by: bag)
     }
 
-    convenience init(width: CGFloat? = nil, height: CGFloat? = nil, rxAttributedText: BehaviorSubject<NSMutableAttributedString>, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, disposedBy bag: DisposeBag, configure: ((LabelPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil, height: CGFloat? = nil, rxAttributedText: BehaviorSubject<NSMutableAttributedString>, alignment: NSTextAlignment = .natural, font: UIFont = .preferredFont(forTextStyle: .body), lineBreak: NSLineBreakMode = .byWordWrapping, lines: Int = 0, color: UIColor = .black, disposedBy bag: DisposeBag, configure: ((LabelPv) -> Void)? = nil) {
         self.init(width: width, height: height, attributedText: try? rxAttributedText.value(), alignment: alignment, font: font, lineBreak: lineBreak, lines: lines, color: color, configure: configure)
 
         rxAttributedText.bind { [weak self] attributedText in

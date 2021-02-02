@@ -385,13 +385,13 @@ public extension LayoutPrimitives {
 }
 
 public struct ViewConstraints<T> {
-    let view: T
-    let constraints: [NSLayoutConstraint]
+    public let view: T
+    public let constraints: [NSLayoutConstraint]
 }
 
-public class LayoutPrimitivesUtils {
+open class LayoutPrimitivesUtils {
     @discardableResult
-    static func apply<T>(to view: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> ViewConstraints<T> where T: UIView {
+    public static func apply<T>(to view: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> ViewConstraints<T> where T: UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         let constraints: [NSLayoutConstraint] = primitives.getConstraints(for: view)
         if !constraints.isEmpty {
@@ -412,7 +412,7 @@ public class LayoutPrimitivesUtils {
     }
 }
 
-extension UIView {
+public extension UIView {
     @discardableResult
     func add<T>(_ subview: T, _ primitives: LayoutPrimitives, configure: ((T) -> Void)? = nil) -> T where T: UIView {
         addSubview(subview)
@@ -540,17 +540,17 @@ open class StackPv: UIStackView {
         super.init(coder: coder)
     }
 
-    override init(frame: CGRect) {
+    override public init(frame: CGRect) {
         super.init(frame: frame)
     }
 
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     axis: NSLayoutConstraint.Axis = .vertical,
-                     alignment: Alignment = .fill,
-                     distribution: Distribution = .fill,
-                     spacing: CGFloat = 0,
-                     configure: ((StackPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            axis: NSLayoutConstraint.Axis = .vertical,
+                            alignment: Alignment = .fill,
+                            distribution: Distribution = .fill,
+                            spacing: CGFloat = 0,
+                            configure: ((StackPv) -> Void)? = nil) {
         self.init(frame: .zero)
         self.axis = axis
         self.alignment = alignment
@@ -559,18 +559,18 @@ open class StackPv: UIStackView {
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
     }
 
-    convenience init(axis: NSLayoutConstraint.Axis = .vertical, subviews: [UIView?]) {
+    public convenience init(axis: NSLayoutConstraint.Axis = .vertical, subviews: [UIView?]) {
         self.init(width: nil, height: nil, axis: axis)
         addArranged(subviews: subviews)
     }
 
     @discardableResult
-    func addArranged(_ subviews: UIView?...) -> Self {
+    open func addArranged(_ subviews: UIView?...) -> Self {
         return addArranged(subviews: subviews)
     }
 
     @discardableResult
-    func addArranged(subviews: [UIView?]) -> Self {
+    open func addArranged(subviews: [UIView?]) -> Self {
         for view in subviews {
             guard let view = view else {
                 continue
@@ -585,7 +585,7 @@ open class StackPv: UIStackView {
         return self
     }
 
-    func removeAllArrangedSubviews() {
+    open func removeAllArrangedSubviews() {
         let removedSubviews = arrangedSubviews.reduce([]) { (allSubviews, subview) -> [UIView] in
             self.removeArrangedSubview(subview)
             return allSubviews + [subview]
@@ -595,23 +595,23 @@ open class StackPv: UIStackView {
         removedSubviews.forEach { $0.removeFromSuperview() }
     }
 
-    func first(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
+    open func first(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
         return arrangedSubviews.first(where: predicate)
     }
 
-    func last(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
+    open func last(where predicate: (UIView) -> Bool = { _ in true }) -> UIView? {
         return arrangedSubviews.last(where: predicate)
     }
 
-    func filter(where predicate: (UIView) -> Bool) -> [UIView] {
+    open func filter(where predicate: (UIView) -> Bool) -> [UIView] {
         return arrangedSubviews.filter(predicate)
     }
 
-    func forEach(_ body: (UIView) -> Void) {
+    open func forEach(_ body: (UIView) -> Void) {
         arrangedSubviews.forEach(body)
     }
 
-    func animate(duration: TimeInterval, delay: TimeInterval = 0, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
+    open func animate(duration: TimeInterval, delay: TimeInterval = 0, animations: @escaping () -> Void, completion: ((Bool) -> Void)? = nil) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
             UIView.animate(withDuration: duration, animations: {
                 animations()
@@ -622,56 +622,56 @@ open class StackPv: UIStackView {
 }
 
 open class VStackPv: StackPv {
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     alignment: Alignment = .fill,
-                     distribution: Distribution = .fill,
-                     spacing: CGFloat = 0,
-                     configure: ((StackPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            alignment: Alignment = .fill,
+                            distribution: Distribution = .fill,
+                            spacing: CGFloat = 0,
+                            configure: ((StackPv) -> Void)? = nil) {
         self.init(width: width, height: height, axis: .vertical, alignment: alignment, distribution: distribution, spacing: spacing, configure: configure)
     }
 
-    convenience init(_ subviews: UIView?...) {
+    public convenience init(_ subviews: UIView?...) {
         self.init(axis: .vertical, subviews: subviews)
     }
 }
 
 open class HStackPv: StackPv {
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     alignment: Alignment = .fill,
-                     distribution: Distribution = .fill,
-                     spacing: CGFloat = 0,
-                     configure: ((StackPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            alignment: Alignment = .fill,
+                            distribution: Distribution = .fill,
+                            spacing: CGFloat = 0,
+                            configure: ((StackPv) -> Void)? = nil) {
         self.init(width: width, height: height, axis: .horizontal, alignment: alignment, distribution: distribution, spacing: spacing, configure: configure)
     }
 
-    convenience init(_ subviews: UIView?...) {
+    public convenience init(_ subviews: UIView?...) {
         self.init(axis: .horizontal, subviews: subviews)
     }
 }
 
 open class SpacerPv: UIView {
-    var spacing: CGFloat?
-    var percent: CGFloat?
-    var min: CGFloat?
-    var max: CGFloat?
-    var priority: LayoutPrimitivesPriority = .highest
+    open var spacing: CGFloat?
+    open var percent: CGFloat?
+    open var min: CGFloat?
+    open var max: CGFloat?
+    open var priority: LayoutPrimitivesPriority = .highest
 
     public required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
 
-    override init(frame: CGRect) {
+    override public init(frame: CGRect) {
         super.init(frame: frame)
     }
 
-    convenience init(_ spacing: CGFloat? = nil,
-                     percent: CGFloat? = nil,
-                     min: CGFloat? = nil,
-                     max: CGFloat? = nil,
-                     bg backgroundColor: UIColor = .clear,
-                     priority: LayoutPrimitivesPriority = .highest) {
+    public convenience init(_ spacing: CGFloat? = nil,
+                            percent: CGFloat? = nil,
+                            min: CGFloat? = nil,
+                            max: CGFloat? = nil,
+                            bg backgroundColor: UIColor = .clear,
+                            priority: LayoutPrimitivesPriority = .highest) {
         self.init(frame: .zero)
         self.spacing = spacing
         self.percent = percent
@@ -682,7 +682,7 @@ open class SpacerPv: UIView {
     }
 
     @discardableResult
-    func applySpacing(axis: NSLayoutConstraint.Axis = .vertical) -> Self {
+    open func applySpacing(axis: NSLayoutConstraint.Axis = .vertical) -> Self {
         if let spacing = spacing {
             apply(axis == .vertical ? .height(spacing, priority: priority) : .width(spacing, priority: priority))
         }
@@ -704,16 +704,16 @@ open class SpacerPv: UIView {
 }
 
 open class SpacerFilledPv: SpacerPv {
-    convenience init(priority: LayoutPrimitivesPriority = .lowest) {
+    public convenience init(priority: LayoutPrimitivesPriority = .lowest) {
         self.init(nil, min: MAX_PV, max: nil, priority: priority)
     }
 }
 
 open class ViewPv: UIView {
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     bg backgroundColor: UIColor = .clear,
-                     configure: ((ViewPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            bg backgroundColor: UIColor = .clear,
+                            configure: ((ViewPv) -> Void)? = nil) {
         self.init()
         self.backgroundColor = backgroundColor
         LayoutPrimitivesUtils.applyFixed(to: self, width: width, height: height, configure: configure)
@@ -721,11 +721,11 @@ open class ViewPv: UIView {
 }
 
 open class ImagePv: UIImageView {
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     _ named: String? = nil,
-                     contentMode: ContentMode = .scaleAspectFit,
-                     configure: ((ImagePv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            _ named: String? = nil,
+                            contentMode: ContentMode = .scaleAspectFit,
+                            configure: ((ImagePv) -> Void)? = nil) {
         if let named = named {
             self.init(image: UIImage(named: named))
         } else {
@@ -739,17 +739,17 @@ open class ImagePv: UIImageView {
 }
 
 open class LabelPv: UILabel {
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     _ text: String? = nil,
-                     tag: String = "",
-                     attributedText: NSAttributedString? = nil,
-                     alignment: NSTextAlignment = .natural,
-                     font: UIFont = .preferredFont(forTextStyle: .body),
-                     lineBreak: NSLineBreakMode = .byWordWrapping,
-                     lines: Int = 0,
-                     color: UIColor = .black,
-                     configure: ((LabelPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            _ text: String? = nil,
+                            tag: String = "",
+                            attributedText: NSAttributedString? = nil,
+                            alignment: NSTextAlignment = .natural,
+                            font: UIFont = .preferredFont(forTextStyle: .body),
+                            lineBreak: NSLineBreakMode = .byWordWrapping,
+                            lines: Int = 0,
+                            color: UIColor = .black,
+                            configure: ((LabelPv) -> Void)? = nil) {
         self.init()
         self.text = text ?? (!tag.isEmpty ? NSLocalizedString(tag, comment: "") : nil)
         if let attributedText = attributedText {
@@ -765,15 +765,15 @@ open class LabelPv: UILabel {
 }
 
 open class TextViewPv: UITextView, UITextViewDelegate {
-    convenience init(width: CGFloat? = nil,
-                     height: CGFloat? = nil,
-                     _ text: String? = nil,
-                     attributedText: NSAttributedString? = nil,
-                     font: UIFont = .preferredFont(forTextStyle: .body),
-                     editable: Bool = false, scrollEnabled: Bool = false,
-                     dataDetectorTypes: UIDataDetectorTypes = [.link],
-                     color: UIColor = .black, tintColor: UIColor? = nil,
-                     configure: ((TextViewPv) -> Void)? = nil) {
+    public convenience init(width: CGFloat? = nil,
+                            height: CGFloat? = nil,
+                            _ text: String? = nil,
+                            attributedText: NSAttributedString? = nil,
+                            font: UIFont = .preferredFont(forTextStyle: .body),
+                            editable: Bool = false, scrollEnabled: Bool = false,
+                            dataDetectorTypes: UIDataDetectorTypes = [.link],
+                            color: UIColor = .black, tintColor: UIColor? = nil,
+                            configure: ((TextViewPv) -> Void)? = nil) {
         self.init()
         delegate = self
         self.text = text
